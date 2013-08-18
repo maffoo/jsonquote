@@ -114,9 +114,8 @@ package object play {
       }
     }
 
-    // Parse the string context parts into a json AST with splice points
-    // and typecheck/convert args to types appropriate for each splice point.
-    // At runtime, the converted values will be spliced into the lifted AST.
+    // Parse the string context parts into a json AST with holes, and then
+    // typecheck/convert args to the appropriate types and splice them in.
     c.prefix.tree match {
       case Apply(_, List(Apply(_, partTrees))) =>
         val parts = partTrees map { case Literal(Constant(const: String)) => const }
