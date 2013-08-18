@@ -12,128 +12,92 @@ package object play {
   def jsonImpl(c: Context)(args: c.Expr[Any]*): c.Expr[JsValue] = {
     import c.universe._
 
-    def liftSeq[A: WeakTypeTag](exprs: Seq[c.Expr[A]]): c.Expr[Seq[A]] = {
-      val trees = exprs.map(_.tree).toList
-      c.Expr[Seq[A]](Apply(Select(Ident(newTermName("Seq")), newTermName("apply")), trees))
-    }
-
-    // convert a json AST known at compile time into an equivalent runtime expression
-    def lift(js: JsValue): c.Expr[JsValue] = js match {
-      case SpliceValue()  => reify { SpliceValue() }
-      case SpliceValues() => sys.error("cannot inject values at top level")
+    // convert the given json AST to a tree with arguments spliced in at the correct locations
+    def splice(js: JsValue)(implicit args: Iterator[Tree]): Tree = js match {
+      case SpliceValue()  => spliceValue(args.next)
+      case SpliceValues() => c.abort(c.enclosingPosition, "cannot splice values at top level")
 
       case JsObject(members) =>
-        val ms = liftSeq(members.map {
-          case SpliceField()      => reify { SpliceField() }
-          case SpliceFields()     => reify { SpliceFields() }
-          case SpliceFieldName(v) => reify { SpliceFieldName(lift(v).splice) }
-          case (k, v)             => reify { (c.literal(k).splice, lift(v).splice) }
-        })
-        reify { JsObject(ms.splice) }
-
-      case JsArray(elements) =>
-        val es = liftSeq(elements.map {
-          case SpliceValue()  => reify { SpliceValue() }
-          case SpliceValues() => reify { SpliceValues() }
-          case e              => lift(e)
-        })
-        reify { JsArray(es.splice) }
-
-      case JsString(s) => reify { JsString(c.literal(s).splice) }
-      case JsNumber(n) => reify { JsNumber(BigDecimal(c.literal(n.toString).splice)) }
-
-      case JsBoolean(true)  => reify { JsBoolean(true) }
-      case JsBoolean(false) => reify { JsBoolean(false) }
-      case JsNull           => reify { JsNull }
-    }
-
-    // walk the given json AST and convert args to be spliced based on their locations in the tree
-    def convertArgs(js: JsValue, args: Iterator[c.Expr[Any]]) = {
-      val builder = Seq.newBuilder[c.Expr[Any]]
-      def walk(js: JsValue): Unit = js match {
-        case SpliceValue()  => builder += convertValue(args.next)
-        case SpliceValues() => builder += convertValues(args.next)
-
-        case JsObject(members) =>
-          members.foreach {
-            case SpliceField()      => builder += convertField(args.next)
-            case SpliceFields()     => builder += convertFields(args.next)
-            case SpliceFieldName(v) => builder += convertFieldName(args.next); walk(v)
-            case (_, v)             => walk(v)
+          val ms = members.map {
+            case SpliceField()      => q"Seq(${spliceField(args.next)})"
+            case SpliceFields()     => spliceFields(args.next)
+            case SpliceFieldName(v) => q"Seq((${spliceFieldName(args.next)}, ${splice(v)}))"
+            case (k, v)             => q"Seq(($k, ${splice(v)}))"
           }
+          q"JsObject(IndexedSeq(..$ms).flatten)"
 
         case JsArray(elements) =>
-          elements.foreach(walk)
+          val es = elements.map {
+            case SpliceValue()  => q"Seq(${spliceValue(args.next)})"
+            case SpliceValues() => spliceValues(args.next)
+            case e              => q"Seq(${splice(e)})"
+          }
+          q"JsArray(IndexedSeq(..$es).flatten)"
 
-        case _ =>
-      }
-      walk(js)
-      builder.result
+      case JsString(s)      => q"JsString($s)"
+      case JsNumber(n)      => q"JsNumber(BigDecimal(${n.toString}))"
+      case JsBoolean(true)  => q"JsBoolean(true)"
+      case JsBoolean(false) => q"JsBoolean(false)"
+      case JsNull           => q"JsNull"
+
     }
 
-    def convertValue(e: c.Expr[Any]): c.Expr[Any] = e.tree.tpe match {
+    def spliceValue(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[JsValue] => e
       case t =>
-        val writer = inferWriter(e, t)
-        reify { writer.splice.writes(e.splice) }
+        q"implicitly[Writes[$t]].writes($e)"
     }
 
-    def convertValues(e: c.Expr[Any]): c.Expr[Any] = e.tree.tpe match {
+    def spliceValues(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[Iterable[JsValue]] => e
 
       case t if t <:< c.typeOf[Iterable[Any]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Iterable[Nothing]] :: Nil))(0)
         val writer = inferWriter(e, valueTpe)
-        val it = c.Expr[Iterable[Any]](e.tree)
-        reify { it.splice.map(writer.splice.writes) }
+        q"$e.map($writer.writes)"
 
       case t if t <:< c.typeOf[Option[JsValue]] => e
 
       case t if t <:< c.typeOf[Option[Any]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
         val writer = inferWriter(e, valueTpe)
-        val it = c.Expr[Option[Any]](e.tree)
-        reify { it.splice.map(writer.splice.writes) }
+        q"$e.map($writer.writes)"
 
-      case t => c.abort(e.tree.pos, s"required Iterable[_] but got $t")
+      case t => c.abort(e.pos, s"required Iterable[_] but got $t")
     }
 
-    def convertField(e: c.Expr[Any]): c.Expr[Any] = e.tree.tpe match {
+    def spliceField(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[(String, JsValue)] => e
 
       case t if t <:< c.typeOf[(String, Any)] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[(String, Nothing)] :: Nil))(1)
         val writer = inferWriter(e, valueTpe)
-        val kv = c.Expr[(String, Any)](e.tree)
-        reify { val (k, v) = kv.splice; (k, writer.splice.writes(v)) }
+        q"val (k, v) = $e; (k, $writer.writes(v))"
 
-      case t => c.abort(e.tree.pos, s"required Iterable[(String, _)] but got $t")
+      case t => c.abort(e.pos, s"required Iterable[(String, _)] but got $t")
     }
 
-    def convertFields(e: c.Expr[Any]): c.Expr[Any] = e.tree.tpe match {
+    def spliceFields(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[Iterable[(String, JsValue)]] => e
 
       case t if t <:< c.typeOf[Iterable[(String, Any)]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Iterable[(String, Nothing)]] :: Nil))(2)
         val writer = inferWriter(e, valueTpe)
-        val it = c.Expr[Iterable[Any]](e.tree)
-        reify { it.splice.map { case (k, v) => (k, writer.splice.writes(v)) } }
+        q"$e.map { case (k, v) => (k, $writer.writes(v)) }"
 
       case t if t <:< c.typeOf[Option[(String, JsValue)]] => e
 
       case t if t <:< c.typeOf[Option[(String, Any)]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[(String, Nothing)]] :: Nil))(2)
         val writer = inferWriter(e, valueTpe)
-        val it = c.Expr[Option[Any]](e.tree)
-        reify { it.splice.map { case (k, v) => (k, writer.splice.writes(v)) } }
+        q"$e.map { case (k, v) => (k, $writer.writes(v)) }"
 
-      case t =>
-        c.abort(e.tree.pos, s"required Iterable[(String, _)] but got $t")
+      case t => c.abort(e.pos, s"required Iterable[(String, _)] but got $t")
     }
 
-    def convertFieldName(e: c.Expr[Any]): c.Expr[Any] = e.tree.tpe match {
+    def spliceFieldName(e: Tree): Tree = e.tpe match {
       case t if t =:= c.typeOf[String] => e
-      case t => c.abort(e.tree.pos, s"required String but got $t")
+      case t => c.abort(e.pos, s"required String but got $t")
     }
 
     // return a list of type parameters in the given type
@@ -145,11 +109,11 @@ package object play {
     }
 
     // locate an implicit Writes[T] for the given type
-    def inferWriter(e: c.Expr[_], t: Type): c.Expr[Writes[Any]] = {
+    def inferWriter(e: Tree, t: Type): Tree = {
       val writerTpe = appliedType(c.typeOf[Writes[_]], List(t))
       c.inferImplicitValue(writerTpe) match {
-        case EmptyTree => c.abort(e.tree.pos, s"could not find implicit value of type Writes[$t]")
-        case tree => c.Expr[Writes[Any]](tree)
+        case EmptyTree => c.abort(e.pos, s"could not find implicit value of type Writes[$t]")
+        case tree => tree
       }
     }
 
@@ -160,8 +124,7 @@ package object play {
       case Apply(_, List(Apply(_, partTrees))) =>
         val parts = partTrees map { case Literal(Constant(const: String)) => const }
         val js = Parse(parts)
-        val convertedArgs = convertArgs(js, args.iterator)
-        reify { Splice(lift(js).splice, liftSeq(convertedArgs).splice) }
+        c.Expr[JsValue](splice(js)(args.iterator.map(_.tree)))
 
       case _ =>
         c.abort(c.enclosingPosition, "invalid")
