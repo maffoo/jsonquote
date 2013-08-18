@@ -18,21 +18,21 @@ package object play {
       case SpliceValues() => c.abort(c.enclosingPosition, "cannot splice values at top level")
 
       case JsObject(members) =>
-          val ms = members.map {
-            case SpliceField()      => q"Seq(${spliceField(args.next)})"
-            case SpliceFields()     => spliceFields(args.next)
-            case SpliceFieldName(v) => q"Seq((${spliceFieldName(args.next)}, ${splice(v)}))"
-            case (k, v)             => q"Seq(($k, ${splice(v)}))"
-          }
-          q"JsObject(IndexedSeq(..$ms).flatten)"
+        val ms = members.map {
+          case SpliceField()      => q"Seq(${spliceField(args.next)})"
+          case SpliceFields()     => spliceFields(args.next)
+          case SpliceFieldName(v) => q"Seq((${spliceFieldName(args.next)}, ${splice(v)}))"
+          case (k, v)             => q"Seq(($k, ${splice(v)}))"
+        }
+        q"JsObject(IndexedSeq(..$ms).flatten)"
 
-        case JsArray(elements) =>
-          val es = elements.map {
-            case SpliceValue()  => q"Seq(${spliceValue(args.next)})"
-            case SpliceValues() => spliceValues(args.next)
-            case e              => q"Seq(${splice(e)})"
-          }
-          q"JsArray(IndexedSeq(..$es).flatten)"
+      case JsArray(elements) =>
+        val es = elements.map {
+          case SpliceValue()  => q"Seq(${spliceValue(args.next)})"
+          case SpliceValues() => spliceValues(args.next)
+          case e              => q"Seq(${splice(e)})"
+        }
+        q"JsArray(IndexedSeq(..$es).flatten)"
 
       case JsString(s)      => q"JsString($s)"
       case JsNumber(n)      => q"JsNumber(BigDecimal(${n.toString}))"
