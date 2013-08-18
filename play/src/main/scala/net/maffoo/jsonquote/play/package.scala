@@ -27,7 +27,7 @@ package object play {
           case SpliceField()      => reify { SpliceField() }
           case SpliceFields()     => reify { SpliceFields() }
           case SpliceFieldName(v) => reify { SpliceFieldName(lift(v).splice) }
-          case (k, v)             => reify { (liftString(k).splice, lift(v).splice) }
+          case (k, v)             => reify { (c.literal(k).splice, lift(v).splice) }
         })
         reify { JsObject(ms.splice) }
 
@@ -39,16 +39,13 @@ package object play {
         })
         reify { JsArray(es.splice) }
 
-      case JsString(s) => reify { JsString(liftString(s).splice) }
-      case JsNumber(n) => reify { JsNumber(liftNumber(n).splice) }
+      case JsString(s) => reify { JsString(c.literal(s).splice) }
+      case JsNumber(n) => reify { JsNumber(BigDecimal(c.literal(n.toString).splice)) }
 
       case JsBoolean(true)  => reify { JsBoolean(true) }
       case JsBoolean(false) => reify { JsBoolean(false) }
       case JsNull           => reify { JsNull }
     }
-
-    def liftString(s: String): c.Expr[String] = c.Expr[String](Literal(Constant(s)))
-    def liftNumber(n: BigDecimal): c.Expr[BigDecimal] = reify { BigDecimal(liftString(n.toString).splice) }
 
     // walk the given json AST and convert args to be spliced based on their locations in the tree
     def convertArgs(js: JsValue, args: Iterator[c.Expr[Any]]) = {
