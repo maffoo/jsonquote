@@ -71,4 +71,76 @@ class PlayTest extends FunSuite with ShouldMatchers {
     val kvOpt = Some("a" -> Foo("1", "2"))
     check(json"{*$kvOpt}", """{"a": {"bar": "1", "baz": "2"}}""")
   }
+
+  test("can nest jsonquote templates") {
+
+    // example taken from the play docs: http://www.playframework.com/documentation/2.1.x/ScalaJson
+    import play.api.libs.json.Json.toJson
+
+    val jsonObject = toJson(
+      Map(
+        "users" -> Seq(
+          toJson(
+            Map(
+              "name" -> toJson("Bob"),
+              "age" -> toJson(31),
+              "email" -> toJson("bob@gmail.com")
+            )
+          ),
+          toJson(
+            Map(
+              "name" -> toJson("Kiki"),
+              "age" -> toJson(25),
+              "email" -> JsNull
+            )
+          )
+        )
+      )
+    )
+
+    val users = Seq(("Bob", 31, Some("bob@gmail.com")), ("Kiki", 25, None))
+
+    // TODO: why do we need the : Seq[JsValue] type ascription here?
+    val quoteA = json"""{
+      users: [*${
+        users.map { case (name, age, email) =>
+          json"""{
+            name: $name,
+            age: $age,
+            email: $email
+          }"""
+        }: Seq[JsValue]
+      }]
+    }"""
+
+    // play already knows how to convert Seq[JsValue] to json array
+    // still need the type ascription here
+    val quoteB = json"""{
+      users: ${
+        users.map { case (name, age, email) =>
+          json"""{
+            name: $name,
+            age: $age,
+            email: $email
+          }"""
+        }: Seq[JsValue]
+      }
+    }"""
+
+    // types inferred properly here
+    val mapped = users.map { case (name, age, email) =>
+      json"""{
+        name: $name,
+        age: $age,
+        email: $email
+      }"""
+    }
+    val quoteC = json"""{
+      users: [*$mapped]
+    }"""
+
+    quoteA should equal (jsonObject)
+    quoteB should equal (jsonObject)
+    quoteC should equal (jsonObject)
+  }
 }
