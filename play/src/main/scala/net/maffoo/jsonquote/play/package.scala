@@ -50,25 +50,23 @@ package object play {
 
     def spliceValues(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[Iterable[JsValue]] => e
-
       case t if t <:< c.typeOf[Iterable[Any]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Iterable[Nothing]] :: Nil))(0)
         val writer = inferWriter(e, valueTpe)
         q"$e.map($writer.writes)"
 
+      case t if t <:< c.typeOf[None.type] => q"Nil"
       case t if t <:< c.typeOf[Option[JsValue]] => e
-
       case t if t <:< c.typeOf[Option[Any]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
         val writer = inferWriter(e, valueTpe)
-        q"$e.map($writer.writes)"
+        q"Option.option2Iterable($e).map($writer.writes)"
 
       case t => c.abort(e.pos, s"required Iterable[_] but got $t")
     }
 
     def spliceField(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[(String, JsValue)] => e
-
       case t if t <:< c.typeOf[(String, Any)] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[(String, Nothing)] :: Nil))(1)
         val writer = inferWriter(e, valueTpe)
@@ -79,18 +77,17 @@ package object play {
 
     def spliceFields(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[Iterable[(String, JsValue)]] => e
-
       case t if t <:< c.typeOf[Iterable[(String, Any)]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Iterable[(String, Nothing)]] :: Nil))(2)
         val writer = inferWriter(e, valueTpe)
         q"$e.map { case (k, v) => (k, $writer.writes(v)) }"
 
+      case t if t <:< c.typeOf[None.type] => q"Nil"
       case t if t <:< c.typeOf[Option[(String, JsValue)]] => e
-
       case t if t <:< c.typeOf[Option[(String, Any)]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[(String, Nothing)]] :: Nil))(2)
         val writer = inferWriter(e, valueTpe)
-        q"$e.map { case (k, v) => (k, $writer.writes(v)) }"
+        q"Option.option2Iterable($e).map { case (k, v) => (k, $writer.writes(v)) }"
 
       case t => c.abort(e.pos, s"required Iterable[(String, _)] but got $t")
     }

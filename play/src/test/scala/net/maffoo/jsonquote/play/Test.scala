@@ -45,6 +45,14 @@ class PlayTest extends FunSuite with ShouldMatchers {
     check(json"[..$vOpt]", """[1]""")
   }
 
+  test("can mix values, Iterables and Options in array") {
+    val a = List("a")
+    val b = Some("b")
+    val c = Nil
+    val d = None
+    check(json"""[1, ..$a, 2, ..$b, 3, ..$c, 4, ..$d, 5]""", """[1, "a", 2, "b", 3, 4, 5]""")
+  }
+
   test("can inject Tuple2 as object field") {
     val kv = "test" -> Foo("1", "2")
     check(json"{$kv}", """{"test": {"bar":"1", "baz":"2"}}""")
@@ -70,6 +78,17 @@ class PlayTest extends FunSuite with ShouldMatchers {
   test("can inject Option fields with implicit Writes") {
     val kvOpt = Some("a" -> Foo("1", "2"))
     check(json"{..$kvOpt}", """{"a": {"bar": "1", "baz": "2"}}""")
+  }
+
+  test("can mix values, Iterables and Options in object") {
+    val a = List("a" -> 10)
+    val b = Some("b" -> 20)
+    val c = Nil
+    val d = None
+    check(
+      json"""{i:1, ..$a, i:2, ..$b, i:3, ..$c, i:4, ..$d, i:5}""",
+      """{"i":1, "a":10, "i":2, "b":20, "i":3, "i":4, "i":5}"""
+    )
   }
 
   test("can nest jsonquote templates") {
