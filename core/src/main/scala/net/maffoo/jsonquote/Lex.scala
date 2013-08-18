@@ -15,7 +15,7 @@ object Token {
   case object OBJECT_END               extends Literal("}")
   case object ARRAY_START              extends Literal("[")
   case object ARRAY_END                extends Literal("]")
-  case object REPEAT                   extends Literal("*")
+  case object REPEAT                   extends Literal("..")
   case object COLON                    extends Literal(":")
   case object COMMA                    extends Literal(",")
   case object TRUE                     extends Literal("true")
@@ -52,7 +52,7 @@ object Lex {
         case '}' => lexLiteral(OBJECT_END)
         case '[' => lexLiteral(ARRAY_START)
         case ']' => lexLiteral(ARRAY_END)
-        case '*' => lexLiteral(REPEAT)
+        case '.' => lexLiteral(REPEAT)
         case ':' => lexLiteral(COLON)
         case ',' => lexLiteral(COMMA)
         case '"' => lexString

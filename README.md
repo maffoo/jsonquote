@@ -49,19 +49,20 @@ scala> json"{$item}"
 res4: play.api.libs.json.JsValue = {"msg":"yippee!"}
 ```
 
-We can also interpolate multiple values or fields from Iterable or Option all at once:
+We can also interpolate multiple values or fields from Iterable or Option all at once
+(the .. syntax here was chosen to mirror that used in quasiquotes for scala macros):
 ```scala
 scala> val numbers = List(1,2,3,4,5)
 numbers: List[Int] = List(1, 2, 3, 4, 5)
 
-scala> json"[*$numbers]"
+scala> json"[..$numbers]"
 res5: play.api.libs.json.JsValue = [1,2,3,4,5]
 
 scala> val (a, b) = (Some("a" -> "here"), None)
 a: Some[(String, String)] = Some((a,here))
 b: None.type = None
 
-scala> json"{*$a, *$b}"
+scala> json"{..$a, ..$b}"
 res6: play.api.libs.json.JsValue = {"a":"here"}
 ```
 
