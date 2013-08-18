@@ -1,5 +1,6 @@
 import sbt._
 import sbt.Keys._
+import com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseKeys
 
 object BuildSettings {
   val buildVersion = "0.1.0-SNAPSHOT"
@@ -12,7 +13,8 @@ object BuildSettings {
     scalaOrganization := buildScalaOrganization,
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
-    scalacOptions ++= Seq("-feature", "-deprecation")
+    scalacOptions ++= Seq("-feature", "-deprecation"),
+    EclipseKeys.eclipseOutput := Some(".eclipse-target")
   )
 }
 
