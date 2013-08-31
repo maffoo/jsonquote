@@ -39,7 +39,6 @@ package object play {
       case JsBoolean(true)  => q"JsBoolean(true)"
       case JsBoolean(false) => q"JsBoolean(false)"
       case JsNull           => q"JsNull"
-
     }
 
     def spliceValue(e: Tree): Tree = e.tpe match {

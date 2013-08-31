@@ -1,6 +1,6 @@
 package net.maffoo.jsonquote.play
 
-import net.maffoo.jsonquote.{Parser, Token}
+import net.maffoo.jsonquote.Parser
 import _root_.play.api.libs.json._
 
 object Parse extends Parser[JsValue, (String, JsValue)] {
