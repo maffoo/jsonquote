@@ -33,6 +33,14 @@ object MyBuild extends Build {
     )
   )
 
+  lazy val lift = Project(
+    "jsonquote-lift",
+    file("lift"),
+    settings = buildSettings ++ Seq(
+      libraryDependencies += "net.liftweb" %% "lift-json" % "2.5.1"
+    )
+  ) dependsOn(core % "compile->compile;test->test")
+
   lazy val play = Project(
     "jsonquote-play",
     file("play"),
