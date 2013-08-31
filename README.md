@@ -4,8 +4,7 @@ jsonquote
 jsonquote is a little library that lets you build JSON in Scala using string interpolation.
 It uses macros to parse and validate your json at compile time, and to ensure that the values
 you are trying to interpolate are of the appropriate types for the places in the json where
-they are to be interpolated. Currently, jsonquote supports play json, with support for other
-json libraries like lift and spray in the works.
+they are to be interpolated. jsonquote supports play-json, spray-json, and lift-json.
 
 Here are some examples of how the interpolation works. First, import everything:
 ```scala
