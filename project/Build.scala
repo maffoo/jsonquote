@@ -41,4 +41,12 @@ object MyBuild extends Build {
       libraryDependencies += "com.typesafe.play" %% "play-json" % "2.2.0-M2"
     )
   ) dependsOn(core % "compile->compile;test->test")
+
+  lazy val spray = Project(
+    "jsonquote-spray",
+    file("spray"),
+    settings = buildSettings ++ Seq(
+      libraryDependencies += "io.spray" %% "spray-json" % "1.2.5"
+    )
+  ) dependsOn(core % "compile->compile;test->test")
 }
