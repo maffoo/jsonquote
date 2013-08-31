@@ -9,6 +9,7 @@ object BuildSettings {
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
     version := buildVersion,
+    organization := "net.maffoo",
     scalaVersion := buildScalaVersion,
     scalaOrganization := buildScalaOrganization,
     resolvers += Resolver.sonatypeRepo("snapshots"),
