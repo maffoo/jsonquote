@@ -151,28 +151,9 @@ class LiteralTest extends FunSuite with ShouldMatchers {
     quoteB should equal (jsonObject)
     quoteC should equal (jsonObject)
   }
-}
 
-//object Test {
-//  def main(args: Array[String]): Unit = {
-//    val one = 1
-//    val two = 2
-//    val three = 3
-//    val oneTwo = 1 -> 2
-//    val threeFour = "three" -> 4
-//    val oneTwoThree = Seq("1", "2", "3")
-//    val empty = Json("{}")
-//    val empty2 = json"{}"
-//
-//    assert(empty == empty2)
-//    assert(json""" "hello!" """.toString == """"hello!"""")
-//    assert(json"{$one: 1}".toString == """{"1":1}""")
-//    assert(json"[$one, $two, ..$oneTwoThree]".toString == """[1,2,"1","2","3"]""")
-//    assert(json"{$one: $two, empty: $empty}".toString == """{"1":2,"empty":{}}""")
-//    assert(json"{$oneTwo, $threeFour}".toString == """{"1":2,"three":4}""")
-//    assert(json"{one: $one, three: $three}".toString == """{"one":1,"three":3}""")
-//
-//    val source = Source.fromURL(getClass.getResource("sample.json"))
-//    Json(source.getLines.mkString)
-//  }
-//}
+  test("json parser can handle crazy javascript") {
+    val source = Source.fromURL(getClass.getResource("sample.json"))
+    Json(source.getLines.mkString)
+  }
+}
