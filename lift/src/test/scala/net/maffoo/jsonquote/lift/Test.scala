@@ -12,11 +12,7 @@ class LiftTest extends FunSuite with ShouldMatchers {
   implicit val formats = DefaultFormats
 
   implicit object FooWrites extends Writes[Foo] {
-    def write(foo: Foo): JValue =
-      JObject(List(
-        JField("bar", JString(foo.bar)),
-        JField("baz", JString(foo.baz))
-      ))
+    def write(foo: Foo): JValue = json"{ bar: ${foo.bar}, baz: ${foo.baz} }"
   }
 
   def check(js: JValue, s: String): Unit = { js should equal (parse(s)) }
