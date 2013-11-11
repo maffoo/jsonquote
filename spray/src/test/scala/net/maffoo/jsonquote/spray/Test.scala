@@ -2,12 +2,11 @@ package net.maffoo.jsonquote.spray
 
 import _root_.spray.json._
 import _root_.spray.json.DefaultJsonProtocol._
-import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{FunSuite, Matchers}
 
 case class Foo(bar: String, baz: String)
 
-class SprayTest extends FunSuite with ShouldMatchers {
+class SprayTest extends FunSuite with Matchers {
 
   implicit object FooFormat extends JsonWriter[Foo] {
     def write(x: Foo) = JsObject(Map("bar" -> JsString(x.bar), "baz" -> JsString(x.baz)))

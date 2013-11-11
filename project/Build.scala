@@ -29,7 +29,7 @@ object MyBuild extends Build {
     settings = buildSettings ++ Seq(
       libraryDependencies ++= Seq(
         scalaOrganization.value % "scala-reflect" % scalaVersion.value,
-        "org.scalatest" %% "scalatest" % "2.0.M5b" % "test"
+        "org.scalatest" %% "scalatest" % "2.0" % "test"
       )
     )
   )

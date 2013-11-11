@@ -1,12 +1,11 @@
 package net.maffoo.jsonquote.play
 
 import _root_.play.api.libs.json._
-import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{FunSuite, Matchers}
 
 case class Foo(bar: String, baz: String)
 
-class PlayTest extends FunSuite with ShouldMatchers {
+class PlayTest extends FunSuite with Matchers {
 
   implicit val fooFormat = Json.writes[Foo]
 

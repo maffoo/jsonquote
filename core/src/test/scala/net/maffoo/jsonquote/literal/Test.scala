@@ -1,12 +1,11 @@
 package net.maffoo.jsonquote.literal
 
-import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{FunSuite, Matchers}
 import scala.io.Source
 
 case class Foo(bar: String, baz: String)
 
-class LiteralTest extends FunSuite with ShouldMatchers {
+class LiteralTest extends FunSuite with Matchers {
 
   import Writes._
 

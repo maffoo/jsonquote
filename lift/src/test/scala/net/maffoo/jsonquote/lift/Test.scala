@@ -2,12 +2,11 @@ package net.maffoo.jsonquote.lift
 
 import net.liftweb.json._
 import net.maffoo.jsonquote.lift.Writes._
-import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{FunSuite, Matchers}
 
 case class Foo(bar: String, baz: String)
 
-class LiftTest extends FunSuite with ShouldMatchers {
+class LiftTest extends FunSuite with Matchers {
 
   implicit val formats = DefaultFormats
 
