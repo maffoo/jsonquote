@@ -1,9 +1,10 @@
 import sbt._
 import sbt.Keys._
+import bintray.Plugin._
 import com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseKeys
 
 object BuildSettings {
-  val buildVersion = "0.1.0-SNAPSHOT"
+  val buildVersion = "0.1.0"
   val buildScalaVersion = "2.10.4"
   val buildScalaOrganization = "org.scala-lang"
 
@@ -12,6 +13,7 @@ object BuildSettings {
     organization := "net.maffoo",
     scalaVersion := buildScalaVersion,
     scalaOrganization := buildScalaOrganization,
+    licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
     scalacOptions ++= Seq("-feature", "-deprecation"),
@@ -27,7 +29,7 @@ object MyBuild extends Build {
   lazy val core = Project(
     "jsonquote-core",
     file("core"),
-    settings = buildSettings ++ Seq(
+    settings = buildSettings ++ bintraySettings ++ Seq(
       libraryDependencies ++= Seq(
         scalaOrganization.value % "scala-reflect" % scalaVersion.value,
         "org.scalatest" %% "scalatest" % "2.0" % "test"
@@ -38,7 +40,7 @@ object MyBuild extends Build {
   lazy val lift = Project(
     "jsonquote-lift",
     file("lift"),
-    settings = buildSettings ++ Seq(
+    settings = buildSettings ++ bintraySettings ++ Seq(
       libraryDependencies += "net.liftweb" %% "lift-json" % "2.5.1"
     )
   ) dependsOn(core % "compile->compile;test->test")
@@ -46,7 +48,7 @@ object MyBuild extends Build {
   lazy val play = Project(
     "jsonquote-play",
     file("play"),
-    settings = buildSettings ++ Seq(
+    settings = buildSettings ++ bintraySettings ++ Seq(
       resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
       libraryDependencies += "com.typesafe.play" %% "play-json" % "2.2.1"
     )
@@ -55,7 +57,7 @@ object MyBuild extends Build {
   lazy val spray = Project(
     "jsonquote-spray",
     file("spray"),
-    settings = buildSettings ++ Seq(
+    settings = buildSettings ++ bintraySettings ++ Seq(
       libraryDependencies += "io.spray" %% "spray-json" % "1.2.5"
     )
   ) dependsOn(core % "compile->compile;test->test")
