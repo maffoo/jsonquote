@@ -65,13 +65,24 @@ scala> json"{..$a, ..$b}"
 res6: play.api.libs.json.JsValue = {"a":"here"}
 ```
 
+Alternately, we can define optional fields with a name but optional value that
+will be dropped from the final result if the value is None:
+```scala
+scala> val (some, none) = (Some("hello!"), None)
+some: Some[String] = Some(hello!)
+none: None.type = None
+
+scala> json"{msg:? $some, msg2:? $none}"
+res7: play.api.libs.json.JsObject = {"msg":"hello!"}
+```
+
 Variables of type JsValue are interpolated as-is:
 ```scala
 scala> val list = json"[1,2,3,4]"
 list: play.api.libs.json.JsValue = [1,2,3,4]
 
 scala> json"{list: $list}"
-res7: play.api.libs.json.JsValue = {"list":[1,2,3,4]}
+res8: play.api.libs.json.JsValue = {"list":[1,2,3,4]}
 ```
 
 Other variables are implicitly converted to JsValue and the compiler

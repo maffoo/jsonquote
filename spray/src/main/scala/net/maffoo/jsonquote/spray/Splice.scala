@@ -38,3 +38,11 @@ object SpliceFieldName {
     case _ => None
   }
 }
+
+object SpliceFieldOpt {
+  def apply(k: String) = (k, null)
+  def unapply(f: (String, JsValue)): Option[String] = f match {
+    case (k, null) => Some(k)
+    case _ => None
+  }
+}

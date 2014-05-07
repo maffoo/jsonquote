@@ -22,6 +22,7 @@ package object lift {
           case SpliceField()      => q"Seq(${spliceField(args.next)})"
           case SpliceFields()     => spliceFields(args.next)
           case SpliceFieldName(v) => q"Seq(JField(${spliceFieldName(args.next)}, ${splice(v)}))"
+          case SpliceFieldOpt(k)  => spliceFieldOpt(k, args.next)
           case JField(k, v)       => q"Seq(JField($k, ${splice(v)}))"
         }
         q"JObject(List(..$ms).flatten)"
@@ -96,6 +97,17 @@ package object lift {
         q"$e.toIterable.map { case (k, v) => JField(k, $writer.write(v)) }"
 
       case t => c.abort(e.pos, s"required Iterable[(String, _)] but got $t")
+    }
+
+    def spliceFieldOpt(k: String, e: Tree): Tree = e.tpe match {
+      case t if t <:< c.typeOf[None.type] => q"Nil"
+      case t if t <:< c.typeOf[Option[JValue]] => q"$e.toIterable.map(v => JField($k, v))"
+      case t if t <:< c.typeOf[Option[Any]] =>
+        val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
+        val writer = inferWriter(e, valueTpe)
+        q"$e.toIterable.map { v => JField($k, $writer.write(v)) }"
+
+      case t => c.abort(e.pos, s"required Option[_] but got $t")
     }
 
     def spliceFieldName(e: Tree): Tree = e.tpe match {

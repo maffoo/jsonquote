@@ -79,6 +79,17 @@ class PlayTest extends FunSuite with Matchers {
     check(json"{..$kvOpt}", """{"a": {"bar": "1", "baz": "2"}}""")
   }
 
+  test("can inject Option field values") {
+    val vOpt = Some(JsNumber(1))
+    check(json"{a:? $vOpt}", """{"a": 1}""")
+    check(json"{a:? $None}", """{}""")
+  }
+
+  test("can inject Option field values with implicit Writes") {
+    val vOpt = Some(Foo("1", "2"))
+    check(json"{a:? $vOpt}", """{"a": {"bar": "1", "baz": "2"}}""")
+  }
+
   test("can mix values, Iterables and Options in object") {
     val a = List("a" -> 10)
     val b = Some("b" -> 20)

@@ -22,6 +22,7 @@ package object spray {
           case SpliceField()      => q"Seq(${spliceField(args.next)})"
           case SpliceFields()     => spliceFields(args.next)
           case SpliceFieldName(v) => q"Seq((${spliceFieldName(args.next)}, ${splice(v)}))"
+          case SpliceFieldOpt(k)  => spliceFieldOpt(k, args.next)
           case (k, v)             => q"Seq(($k, ${splice(v)}))"
         }
         q"JsObject(IndexedSeq(..$ms).flatten: _*)"
@@ -89,6 +90,17 @@ package object spray {
         q"$e.toIterable.map { case (k, v) => (k, $writer.write(v)) }"
 
       case t => c.abort(e.pos, s"required Iterable[(String, _)] but got $t")
+    }
+
+    def spliceFieldOpt(k: String, e: Tree): Tree = e.tpe match {
+      case t if t <:< c.typeOf[None.type] => q"Nil"
+      case t if t <:< c.typeOf[Option[JsValue]] => q"$e.toIterable.map(v => ($k, v))"
+      case t if t <:< c.typeOf[Option[Any]] =>
+        val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
+        val writer = inferWriter(e, valueTpe)
+        q"$e.toIterable.map { v => ($k, $writer.write(v)) }"
+
+      case t => c.abort(e.pos, s"required Option[_] but got $t")
     }
 
     def spliceFieldName(e: Tree): Tree = e.tpe match {

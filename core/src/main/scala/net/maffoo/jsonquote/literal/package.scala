@@ -20,6 +20,7 @@ package object literal {
       case SpliceField  => spliceField(args.next)
       case SpliceFields => spliceFields(args.next)
       case SpliceFieldName => spliceFieldName(args.next)
+      case SpliceFieldOpt(k) => spliceFieldOpt(k, args.next)
 
       case Chunk(s) => Literal(Constant(s))
     }
@@ -78,6 +79,18 @@ package object literal {
         q"""$e.map { case (k, v) => implicitly[Writes[String]].write(k) + ":" + $writer.write(v) }.getOrElse("")"""
 
       case t => c.abort(e.pos, s"required Iterable[(String, _)] but got $t")
+    }
+
+    def spliceFieldOpt(k: String, e: Tree): Tree = e.tpe match {
+      case t if t <:< c.typeOf[None.type] => Literal(Constant(""))
+      case t if t <:< c.typeOf[Option[Json]] =>
+        q"""$e.map { v => implicitly[Writes[String]].write($k) + ":" + v }.getOrElse("")"""
+      case t if t <:< c.typeOf[Option[Any]] =>
+        val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
+        val writer = inferWriter(e, valueTpe)
+        q"""$e.map { v => implicitly[Writes[String]].write($k) + ":" + $writer.write(v) }.getOrElse("")"""
+
+      case t => c.abort(e.pos, s"required Option[_] but got $t")
     }
 
     def spliceFieldName(e: Tree): Tree = e.tpe match {

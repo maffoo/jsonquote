@@ -8,7 +8,7 @@ import _root_.play.api.libs.json._
 // they may be valid values.
 
 class Sentinel[A <: AnyRef](inst: A) {
-  def apply() = inst
+  def apply(): A = inst
   def unapply(a: A): Boolean = a eq inst
 }
 
@@ -22,6 +22,14 @@ object SpliceFieldName {
   def apply(x: JsValue) = (null, x)
   def unapply(f: (String, JsValue)): Option[JsValue] = f match {
     case (null, x) => Some(x)
+    case _ => None
+  }
+}
+
+object SpliceFieldOpt {
+  def apply(k: String) = (k, null)
+  def unapply(f: (String, JsValue)): Option[String] = f match {
+    case (k, null) => Some(k)
     case _ => None
   }
 }

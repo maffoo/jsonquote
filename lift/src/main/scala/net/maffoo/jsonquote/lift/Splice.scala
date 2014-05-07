@@ -25,3 +25,11 @@ object SpliceFieldName {
     case _ => None
   }
 }
+
+object SpliceFieldOpt {
+  def apply(k: String) = JField(k, null)
+  def unapply(f: JField): Option[String] = f match {
+    case JField(k, null) => Some(k)
+    case _ => None
+  }
+}
