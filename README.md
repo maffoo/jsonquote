@@ -6,6 +6,31 @@ It uses macros to parse and validate your json at compile time, and to ensure th
 you are trying to interpolate are of the appropriate types for the places in the json where
 they are to be interpolated. jsonquote supports play-json, spray-json, and lift-json.
 
+
+Using jsonquote
+---------------
+
+jsonquote is published on bintray. To include it in your project, simply add the desired
+artifact as a maven dependency for the json library you would like to use:
+```scala
+resolvers += "bintray-maffoo" at "http://dl.bintray.com/maffoo/maven"
+
+// use the basic 'literal' json support built in to jsonquote
+libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.1.0"
+
+// use one of the supported third-party json libraries
+libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.1.0"
+
+libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.1.0"
+
+libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.1.0"
+
+```
+
+
+Examples
+--------
+
 Here are some examples of how the interpolation works. First, import everything:
 ```scala
 scala> import net.maffoo.jsonquote.play._
