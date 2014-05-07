@@ -4,7 +4,7 @@ import com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseKeys
 
 object BuildSettings {
   val buildVersion = "0.1.0-SNAPSHOT"
-  val buildScalaVersion = "2.10.2"
+  val buildScalaVersion = "2.10.4"
   val buildScalaOrganization = "org.scala-lang"
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
@@ -15,7 +15,8 @@ object BuildSettings {
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
     scalacOptions ++= Seq("-feature", "-deprecation"),
-    addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.2" % "2.0.0-SNAPSHOT"),
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0" cross CrossVersion.full),
+    libraryDependencies += "org.scalamacros" %% "quasiquotes" % "2.0.0",
     EclipseKeys.eclipseOutput := Some(".eclipse-target")
   )
 }

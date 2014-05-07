@@ -152,7 +152,7 @@ class LiteralTest extends FunSuite with Matchers {
   }
 
   test("json parser can handle crazy javascript") {
-    val source = Source.fromURL(getClass.getResource("sample.json"))
+    val source = Source.fromURL(getClass.getResource("/sample.json"))
     Json(source.getLines.mkString)
   }
 }
