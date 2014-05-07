@@ -4,7 +4,7 @@ import bintray.Plugin._
 import com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseKeys
 
 object BuildSettings {
-  val buildVersion = "0.1.0"
+  val buildVersion = "0.1.1"
   val buildScalaVersion = "2.10.4"
   val buildScalaOrganization = "org.scala-lang"
 
@@ -12,6 +12,7 @@ object BuildSettings {
     version := buildVersion,
     organization := "net.maffoo",
     scalaVersion := buildScalaVersion,
+    crossScalaVersions := Seq(scalaVersion.value),
     scalaOrganization := buildScalaOrganization,
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     resolvers += Resolver.sonatypeRepo("snapshots"),
@@ -25,6 +26,10 @@ object BuildSettings {
 
 object MyBuild extends Build {
   import BuildSettings._
+
+  lazy val root = Project("jsonquote", file("."), settings = buildSettings).aggregate(
+    core, lift, play, spray
+  )
 
   lazy val core = Project(
     "jsonquote-core",
