@@ -59,7 +59,7 @@ package object spray {
       case t if t <:< c.typeOf[Option[Any]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
         val writer = inferWriter(e, valueTpe)
-        q"Option.option2Iterable($e).map($writer.write)"
+        q"$e.toIterable.map($writer.write)"
 
       case t => c.abort(e.pos, s"required Iterable[_] but got $t")
     }
@@ -86,7 +86,7 @@ package object spray {
       case t if t <:< c.typeOf[Option[(String, Any)]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[(String, Nothing)]] :: Nil))(2)
         val writer = inferWriter(e, valueTpe)
-        q"Option.option2Iterable($e).map { case (k, v) => (k, $writer.write(v)) }"
+        q"$e.toIterable.map { case (k, v) => (k, $writer.write(v)) }"
 
       case t => c.abort(e.pos, s"required Iterable[(String, _)] but got $t")
     }

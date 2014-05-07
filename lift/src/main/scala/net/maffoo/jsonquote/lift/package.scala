@@ -59,7 +59,7 @@ package object lift {
       case t if t <:< c.typeOf[Option[Any]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
         val writer = inferWriter(e, valueTpe)
-        q"Option.option2Iterable($e).map($writer.write)"
+        q"$e.toIterable.map($writer.write)"
 
       case t => c.abort(e.pos, s"required Iterable[_] but got $t")
     }
@@ -87,13 +87,13 @@ package object lift {
 
       case t if t <:< c.typeOf[None.type] => q"Nil"
       case t if t <:< c.typeOf[Option[JField]] =>
-        q"Option.option2Iterable($e)"
+        q"$e.toIterable"
       case t if t <:< c.typeOf[Option[(String, JValue)]] =>
-        q"Option.option2Iterable($e).map { case (k, v) => JField(k, v) }"
+        q"$e.toIterable.map { case (k, v) => JField(k, v) }"
       case t if t <:< c.typeOf[Option[(String, Any)]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[(String, Nothing)]] :: Nil))(2)
         val writer = inferWriter(e, valueTpe)
-        q"Option.option2Iterable($e).map { case (k, v) => JField(k, $writer.write(v)) }"
+        q"$e.toIterable.map { case (k, v) => JField(k, $writer.write(v)) }"
 
       case t => c.abort(e.pos, s"required Iterable[(String, _)] but got $t")
     }
