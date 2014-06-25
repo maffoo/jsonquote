@@ -38,6 +38,11 @@ class LiftTest extends FunSuite with Matchers {
     check(json"[..$Nil]", """[]""")
   }
 
+  test("can inject a map of writeable values") {
+    val foos: Map[String, Int] = scala.collection.immutable.SortedMap("a" -> 1, "b" -> 2)
+    check(json"$foos", """{"a":1, "b":2}""")
+  }
+
   test("can inject Option values") {
     val vOpt = Some(JInt(1))
     check(json"[..$vOpt]", """[1]""")

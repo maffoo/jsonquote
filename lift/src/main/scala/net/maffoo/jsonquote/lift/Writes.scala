@@ -41,4 +41,11 @@ object Writes {
       JArray(s.map(writer.write).toList)
     }
   }
+
+  implicit def mapWrites[A: Writes]: Writes[Map[String, A]] = new Writes[Map[String, A]] {
+    def write(m: Map[String, A]): JValue = {
+      val writer = implicitly[Writes[A]]
+      JObject(m.map { case (k, v) => JField(k, writer.write(v)) }.toList)
+    }
+  }
 }
