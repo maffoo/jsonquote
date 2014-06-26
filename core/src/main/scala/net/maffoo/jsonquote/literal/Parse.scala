@@ -3,6 +3,7 @@ package net.maffoo.jsonquote.literal
 import net.maffoo.jsonquote._
 import net.maffoo.jsonquote.Token._
 import net.maffoo.jsonquote.Util._
+import scala.reflect.macros.Context
 import scala.util.parsing.json.JSONFormat.quoteString
 
 sealed trait Segment
@@ -40,7 +41,7 @@ object Parse {
 
   def apply(s: Seq[String]): Seq[Segment] = apply(Lex(s))
 
-  def apply(it: Iterator[Token]): Seq[Segment] = {
+  def apply(it: Iterator[(Token, Pos)]): Seq[Segment] = {
     val segments = parseValue(it.buffered).buffered
     expect[Token](EOF)(it)
     val out = IndexedSeq.newBuilder[Segment]
@@ -59,8 +60,9 @@ object Parse {
     out.result
   }
 
-  def parseValue(implicit it: BufferedIterator[Token]): Iterator[Segment] = {
-    it.head match {
+  def parseValue(implicit it: BufferedIterator[(Token, Pos)]): Iterator[Segment] = {
+    val (tok, pos) = it.head
+    tok match {
       case OBJECT_START => parseObject
       case ARRAY_START  => parseArray
       case NUMBER(n)    => it.next(); Iterator(Chunk(n.toString))
@@ -69,21 +71,21 @@ object Parse {
       case FALSE        => it.next(); Iterator(Chunk("false"))
       case NULL         => it.next(); Iterator(Chunk("null"))
       case SPLICE       => it.next(); Iterator(SpliceValue)
-      case tok          => sys.error(s"unexpected token: $tok")
+      case tok          => throw JsonError(s"unexpected token: $tok", pos)
     }
   }
 
-  def parseArray(implicit it: BufferedIterator[Token]): Iterator[Segment] = {
+  def parseArray(implicit it: BufferedIterator[(Token, Pos)]): Iterator[Segment] = {
     expect[Token](ARRAY_START)
-    val elems = if (it.head == ARRAY_END) Iterator.empty else parseElements
+    val elems = if (it.head._1 == ARRAY_END) Iterator.empty else parseElements
     expect[Token](ARRAY_END)
     Iterator(Chunk("[")) ++ elems ++ Iterator(Chunk("]"))
   }
 
-  def parseElements(implicit it: BufferedIterator[Token]): Iterator[Segment] = {
+  def parseElements(implicit it: BufferedIterator[(Token, Pos)]): Iterator[Segment] = {
     val b = Seq.newBuilder[Segment]
     def advance(first: Boolean): Iterator[Segment] = {
-      if (it.head == REPEAT) {
+      if (it.head._1 == REPEAT) {
         it.next()
         expect[Token](SPLICE)
         Iterator(SpliceValues)
@@ -92,7 +94,7 @@ object Parse {
       }
     }
     b ++= advance(first = true)
-    while (it.head != ARRAY_END) {
+    while (it.head._1 != ARRAY_END) {
       expect[Token](COMMA)
       b += Chunk(",")
       b ++= advance(first = false)
@@ -100,17 +102,17 @@ object Parse {
     b.result.iterator
   }
 
-  def parseObject(implicit it: BufferedIterator[Token]): Iterator[Segment] = {
+  def parseObject(implicit it: BufferedIterator[(Token, Pos)]): Iterator[Segment] = {
     expect[Token](OBJECT_START)
-    val members = if (it.head == OBJECT_END) Iterator.empty else parseMembers
+    val members = if (it.head._1 == OBJECT_END) Iterator.empty else parseMembers
     expect[Token](OBJECT_END)
     Iterator(Chunk("{")) ++ members ++ Iterator(Chunk("}"))
   }
 
-  def parseMembers(implicit it: BufferedIterator[Token]): Iterator[Segment] = {
+  def parseMembers(implicit it: BufferedIterator[(Token, Pos)]): Iterator[Segment] = {
     val b = Seq.newBuilder[Segment]
     def advance(first: Boolean): Iterator[Segment] = {
-      if (it.head == REPEAT) {
+      if (it.head._1 == REPEAT) {
         it.next()
         expect[Token](SPLICE)
         Iterator(SpliceFields)
@@ -119,7 +121,7 @@ object Parse {
       }
     }
     b ++= advance(first = true)
-    while (it.head != OBJECT_END) {
+    while (it.head._1 != OBJECT_END) {
       expect[Token](COMMA)
       b += Chunk(",")
       b ++= advance(first = false)
@@ -127,11 +129,12 @@ object Parse {
     b.result.iterator
   }
 
-  def parsePair(first: Boolean)(implicit it: BufferedIterator[Token]): Iterator[Segment] = {
-    it.next() match {
+  def parsePair(first: Boolean)(implicit it: BufferedIterator[(Token, Pos)]): Iterator[Segment] = {
+    val (tok, pos) = it.next()
+    tok match {
       case STRING(k) =>
         expect[Token](COLON)
-        it.head match {
+        it.head._1 match {
           case OPTIONAL =>
             it.next()
             expect[Token](SPLICE)
@@ -142,7 +145,7 @@ object Parse {
 
       case IDENT(k) =>
         expect[Token](COLON)
-        it.head match {
+        it.head._1 match {
           case OPTIONAL =>
             it.next()
             expect[Token](SPLICE)
@@ -152,7 +155,7 @@ object Parse {
         }
 
       case SPLICE =>
-        it.head match {
+        it.head._1 match {
           case COLON =>
             it.next()
             Iterator(SpliceFieldName, Chunk(":")) ++ parseValue
@@ -162,7 +165,7 @@ object Parse {
         }
 
       case tok =>
-        sys.error(s"expected field but got $tok")
+        throw JsonError(s"expected field but got $tok", pos)
     }
   }
 }

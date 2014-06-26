@@ -11,6 +11,9 @@ class PlayTest extends FunSuite with Matchers {
 
   def check(js: JsValue, s: String): Unit = { js should equal (Json.parse(s)) }
 
+  //case class Baz(s: String)
+  //json"""{test: ${Baz("test")}}"""
+
   test("can parse plain json") {
     check(json""" "hello!" """, """"hello!"""")
   }

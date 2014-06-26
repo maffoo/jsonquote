@@ -15,6 +15,8 @@ class LiteralTest extends FunSuite with Matchers {
 
   def check(js: Json, s: String): Unit = { js should equal (Json(s)) }
 
+  //json"""{test: ${Map("test" -> "foo")}}"""
+
   test("can parse plain json") {
     check(json""" "hello!" """, """"hello!"""")
   }

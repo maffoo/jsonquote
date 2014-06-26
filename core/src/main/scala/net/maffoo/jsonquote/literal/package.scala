@@ -27,7 +27,7 @@ package object literal {
 
     def spliceValue(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[Json] => q"$e.toString"
-      case t => q"implicitly[Writes[$t]].write($e).toString"
+      case t => inferWriter(e, t); q"implicitly[Writes[$t]].write($e).toString"
     }
 
     def spliceValues(e: Tree): Tree = e.tpe match {
@@ -120,7 +120,14 @@ package object literal {
     c.prefix.tree match {
       case Apply(_, List(Apply(_, partTrees))) =>
         val parts = partTrees map { case Literal(Constant(const: String)) => const }
-        val segments = Parse(parts)
+        val positions = (parts zip partTrees.map(_.pos)).toMap
+        val segments = try {
+          Parse(parts)
+        } catch {
+          case JsonError(msg, Pos(s, ofs)) =>
+            val pos = positions(s)
+            c.abort(pos.withPoint(pos.point + ofs), msg)
+        }
         val argsIter = args.iterator.map(_.tree)
         val trees = segments.map(s => splice(s)(argsIter))
         c.Expr[Json](q"Parse.coalesce(..$trees)")

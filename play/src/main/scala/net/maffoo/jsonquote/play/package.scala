@@ -45,6 +45,7 @@ package object play {
     def spliceValue(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[JsValue] => e
       case t =>
+        inferWriter(e, t)
         q"implicitly[Writes[$t]].writes($e)"
     }
 
@@ -130,7 +131,14 @@ package object play {
     c.prefix.tree match {
       case Apply(_, List(Apply(_, partTrees))) =>
         val parts = partTrees map { case Literal(Constant(const: String)) => const }
-        val js = Parse(parts)
+        val positions = (parts zip partTrees.map(_.pos)).toMap
+        val js = try {
+          Parse(parts)
+        } catch {
+          case JsonError(msg, Pos(s, ofs)) =>
+            val pos = positions(s)
+            c.abort(pos.withPoint(pos.point + ofs), msg)
+        }
         c.Expr[JsValue](splice(js)(args.iterator.map(_.tree)))
 
       case _ =>

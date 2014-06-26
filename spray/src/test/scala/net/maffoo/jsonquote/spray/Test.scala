@@ -14,6 +14,9 @@ class SprayTest extends FunSuite with Matchers {
 
   def check(js: JsValue, s: String): Unit = { js should equal (s.asJson) }
 
+  //case class Baz(s: String)
+  //json"""{test: ${Baz("test")}}"""
+
   test("can parse plain json") {
     check(json""" "hello!" """, """"hello!"""")
   }

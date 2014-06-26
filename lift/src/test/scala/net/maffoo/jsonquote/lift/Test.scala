@@ -16,6 +16,8 @@ class LiftTest extends FunSuite with Matchers {
 
   def check(js: JValue, s: String): Unit = { js should equal (parse(s)) }
 
+  //json"""{test: ${Map("test" -> "foo")}}"""
+
   test("can parse plain json") {
     check(json""" "hello!" """, """"hello!"""")
   }

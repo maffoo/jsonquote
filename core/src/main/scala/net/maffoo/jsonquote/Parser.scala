@@ -6,14 +6,20 @@ trait Parser[V, F] {
 
   def apply(parts: Seq[String]): V = apply(Lex(parts))
 
-  def apply(it: Iterator[Token]): V = {
+  def apply(it: Iterator[(Token, Pos)]): V = {
     val result = parseValue(it.buffered)
     expect[Token](EOF)(it)
     result
   }
 
-  def parseValue(implicit it: BufferedIterator[Token]): V = {
-    it.head match {
+  def expect[A](a: A)(implicit it: Iterator[(A, Pos)]): Unit = {
+    val (next, pos) = it.next()
+    if (next != a) throw JsonError(s"expected $a but got $next", pos)
+  }
+
+  def parseValue(implicit it: BufferedIterator[(Token, Pos)]): V = {
+    val (tok, pos) = it.head
+    tok match {
       case OBJECT_START => parseObject(it)
       case ARRAY_START  => parseArray(it)
       case NUMBER(n)    => it.next(); makeNumber(n)
@@ -22,21 +28,21 @@ trait Parser[V, F] {
       case FALSE        => it.next(); makeBoolean(false)
       case NULL         => it.next(); makeNull()
       case SPLICE       => it.next(); makeSpliceValue()
-      case tok          => sys.error(s"unexpected token: $tok")
+      case tok          => throw JsonError(s"unexpected token: $tok", pos)
     }
   }
 
-  def parseArray(implicit it: BufferedIterator[Token]): V = {
+  def parseArray(implicit it: BufferedIterator[(Token, Pos)]): V = {
     expect[Token](ARRAY_START)
-    val elements = if (it.head == ARRAY_END) Nil else parseElements
+    val elements = if (it.head._1 == ARRAY_END) Nil else parseElements
     expect[Token](ARRAY_END)
     makeArray(elements)
   }
 
-  def parseElements(implicit it: BufferedIterator[Token]): Seq[V] = {
+  def parseElements(implicit it: BufferedIterator[(Token, Pos)]): Seq[V] = {
     val members = Seq.newBuilder[V]
     def advance(): Unit = {
-      if (it.head == REPEAT) {
+      if (it.head._1 == REPEAT) {
         it.next()
         expect[Token](SPLICE)
         members += makeSpliceValues()
@@ -45,24 +51,24 @@ trait Parser[V, F] {
       }
     }
     advance()
-    while (it.head != ARRAY_END) {
+    while (it.head._1 != ARRAY_END) {
       expect[Token](COMMA)
       advance()
     }
     members.result
   }
 
-  def parseObject(implicit it: BufferedIterator[Token]): V = {
+  def parseObject(implicit it: BufferedIterator[(Token, Pos)]): V = {
     expect[Token](OBJECT_START)
-    val members = if (it.head == OBJECT_END) Nil else parseMembers
+    val members = if (it.head._1 == OBJECT_END) Nil else parseMembers
     expect[Token](OBJECT_END)
     makeObject(members)
   }
 
-  def parseMembers(implicit it: BufferedIterator[Token]): Seq[F] = {
+  def parseMembers(implicit it: BufferedIterator[(Token, Pos)]): Seq[F] = {
     val members = Seq.newBuilder[F]
     def advance(): Unit = {
-      if (it.head == REPEAT) {
+      if (it.head._1 == REPEAT) {
         it.next()
         expect[Token](SPLICE)
         members += makeSpliceFields()
@@ -71,18 +77,19 @@ trait Parser[V, F] {
       }
     }
     advance()
-    while (it.head != OBJECT_END) {
+    while (it.head._1 != OBJECT_END) {
       expect[Token](COMMA)
       advance()
     }
     members.result
   }
 
-  def parsePair(implicit it: BufferedIterator[Token]): F = {
-    it.next() match {
+  def parsePair(implicit it: BufferedIterator[(Token, Pos)]): F = {
+    val (tok, pos) = it.next()
+    tok match {
       case STRING(k) =>
         expect[Token](COLON)
-        it.head match {
+        it.head._1 match {
           case OPTIONAL =>
             it.next()
             expect[Token](SPLICE)
@@ -93,7 +100,7 @@ trait Parser[V, F] {
 
       case IDENT(k) =>
         expect[Token](COLON)
-        it.head match {
+        it.head._1 match {
           case OPTIONAL =>
             it.next()
             expect[Token](SPLICE)
@@ -103,7 +110,7 @@ trait Parser[V, F] {
         }
 
       case SPLICE =>
-        it.head match {
+        it.head._1 match {
           case COLON =>
             it.next()
             makeSpliceFieldName(parseValue)
@@ -113,7 +120,7 @@ trait Parser[V, F] {
         }
 
       case tok =>
-        sys.error(s"expected field but got $tok")
+        throw JsonError(s"expected field but got $tok", pos)
     }
   }
 
