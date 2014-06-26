@@ -40,12 +40,12 @@ object Writes {
     def write(s: String): JValue = JString(s)
   }
 
-  implicit def optionWrites[A: Writes]: Writes[Option[A]] = new Writes[Option[A]] {
-    def write(o: Option[A]): JValue = o match {
-      case Some(a) => implicitly[Writes[A]].write(a)
-      case None => JNull
-    }
-  }
+//  implicit def optionWrites[A: Writes]: Writes[Option[A]] = new Writes[Option[A]] {
+//    def write(o: Option[A]): JValue = o match {
+//      case Some(a) => implicitly[Writes[A]].write(a)
+//      case None => JNull
+//    }
+//  }
 
   implicit def seqWrites[A: Writes]: Writes[Seq[A]] = new Writes[Seq[A]] {
     def write(s: Seq[A]): JValue = {

@@ -123,7 +123,7 @@ class LiftTest extends FunSuite with Matchers {
         JField("users",
           JArray(List(
             ("name" -> "Bob") ~ ("age" -> 31) ~ ("email" -> "bob@gmail.com"),
-            ("name" -> "Kiki") ~ ("age" -> 25) ~ ("email" -> JNull)
+            ("name" -> "Kiki") ~ ("age" -> 25)
           ))
         )
       ))
@@ -137,7 +137,7 @@ class LiftTest extends FunSuite with Matchers {
           json"""{
             name: $name,
             age: $age,
-            email: $email
+            email:? $email
           }"""
         }: Seq[JValue]
       }]
@@ -151,7 +151,7 @@ class LiftTest extends FunSuite with Matchers {
           json"""{
             name: $name,
             age: $age,
-            email: $email
+            email:? $email
           }"""
         }: Seq[JValue]
       }
@@ -162,7 +162,7 @@ class LiftTest extends FunSuite with Matchers {
       json"""{
         name: $name,
         age: $age,
-        email: $email
+        email:? $email
       }"""
     }
     val quoteC = json"""{
