@@ -16,8 +16,20 @@ object Writes {
     def write(a: JValue): JValue = a
   }
 
+  implicit object ByteWrites extends Writes[Byte] {
+    def write(n: Byte): JValue = JInt(n)
+  }
+
+  implicit object ShortWrites extends Writes[Short] {
+    def write(n: Short): JValue = JInt(n)
+  }
+
   implicit object IntWrites extends Writes[Int] {
     def write(n: Int): JValue = JInt(n)
+  }
+
+  implicit object LongWrites extends Writes[Long] {
+    def write(n: Long): JValue = JInt(n)
   }
 
   implicit object DoubeWrites extends Writes[Double] {
