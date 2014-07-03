@@ -5,7 +5,7 @@ import com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseKeys
 
 object BuildSettings {
   val buildVersion = "0.1.3"
-  val buildScalaVersion = "2.10.4"
+  val buildScalaVersion = "2.11.1"
   val buildScalaOrganization = "org.scala-lang"
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
@@ -19,7 +19,6 @@ object BuildSettings {
     resolvers += Resolver.sonatypeRepo("releases"),
     scalacOptions ++= Seq("-feature", "-deprecation"),
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0" cross CrossVersion.full),
-    libraryDependencies += "org.scalamacros" %% "quasiquotes" % "2.0.0",
     EclipseKeys.eclipseOutput := Some(".eclipse-target")
   )
 }
@@ -37,7 +36,8 @@ object MyBuild extends Build {
     settings = buildSettings ++ bintraySettings ++ Seq(
       libraryDependencies ++= Seq(
         scalaOrganization.value % "scala-reflect" % scalaVersion.value,
-        "org.scalatest" %% "scalatest" % "2.0" % "test"
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
+        "org.scalatest" %% "scalatest" % "2.2.0" % "test"
       )
     )
   )
@@ -46,7 +46,7 @@ object MyBuild extends Build {
     "jsonquote-lift",
     file("lift"),
     settings = buildSettings ++ bintraySettings ++ Seq(
-      libraryDependencies += "net.liftweb" %% "lift-json" % "2.5.1"
+      libraryDependencies += "net.liftweb" %% "lift-json" % "2.6-M4"
     )
   ) dependsOn(core % "compile->compile;test->test")
 
@@ -55,7 +55,7 @@ object MyBuild extends Build {
     file("play"),
     settings = buildSettings ++ bintraySettings ++ Seq(
       resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-      libraryDependencies += "com.typesafe.play" %% "play-json" % "2.2.1"
+      libraryDependencies += "com.typesafe.play" %% "play-json" % "2.3.1"
     )
   ) dependsOn(core % "compile->compile;test->test")
 
@@ -63,7 +63,7 @@ object MyBuild extends Build {
     "jsonquote-spray",
     file("spray"),
     settings = buildSettings ++ bintraySettings ++ Seq(
-      libraryDependencies += "io.spray" %% "spray-json" % "1.2.5"
+      libraryDependencies += "io.spray" % "spray-json_2.11.0-RC4" % "1.2.6"
     )
   ) dependsOn(core % "compile->compile;test->test")
 }

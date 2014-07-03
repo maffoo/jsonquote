@@ -1,7 +1,7 @@
 package net.maffoo.jsonquote
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 import scala.util.parsing.json.JSONFormat.quoteString
 
 package object literal {

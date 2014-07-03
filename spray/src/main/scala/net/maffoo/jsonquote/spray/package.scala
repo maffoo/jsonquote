@@ -2,7 +2,7 @@ package net.maffoo.jsonquote
 
 import _root_.spray.json._
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 package object spray {
   implicit class RichJsonSringContext(val sc: StringContext) extends AnyVal {

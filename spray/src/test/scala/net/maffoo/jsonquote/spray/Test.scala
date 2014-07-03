@@ -12,7 +12,7 @@ class SprayTest extends FunSuite with Matchers {
     def write(x: Foo) = JsObject(Map("bar" -> JsString(x.bar), "baz" -> JsString(x.baz)))
   }
 
-  def check(js: JsValue, s: String): Unit = { js should equal (s.asJson) }
+  def check(js: JsValue, s: String): Unit = { js should equal (s.parseJson) }
 
   //case class Baz(s: String)
   //json"""{test: ${Baz("test")}}"""

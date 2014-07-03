@@ -2,7 +2,7 @@ package net.maffoo.jsonquote
 
 import _root_.play.api.libs.json._
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 package object play {
   implicit class RichJsonSringContext(val sc: StringContext) extends AnyVal {
