@@ -35,7 +35,9 @@ class LiftTest extends FunSuite with Matchers {
   }
 
   test("can inject values with implicit Writes") {
+    val bool = true
     val foos = List(Foo("1", "2"), Foo("3", "4"))
+    check(json"$bool", """true""")
     check(json"[..$foos]", """[{"bar":"1", "baz":"2"}, {"bar":"3", "baz":"4"}]""")
     check(json"[..$Nil]", """[]""")
   }
