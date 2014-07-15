@@ -2,7 +2,6 @@ package net.maffoo.jsonquote
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
-import scala.util.parsing.json.JSONFormat.quoteString
 
 package object literal {
   implicit class RichJsonStringContext(val sc: StringContext) extends AnyVal {

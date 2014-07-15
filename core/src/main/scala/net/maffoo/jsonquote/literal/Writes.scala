@@ -1,6 +1,6 @@
 package net.maffoo.jsonquote.literal
 
-import scala.util.parsing.json.JSONFormat.quoteString
+import net.maffoo.jsonquote.literal.Json.quoteString
 
 // Typeclasses for converting to literal Json.
 // Borrowed from the Writes mechanism in play-json.
