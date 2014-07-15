@@ -18,6 +18,8 @@ object SpliceValues extends Sentinel[JValue](new JObject(Nil))
 object SpliceField  extends Sentinel[JField](new JField("", JNull))
 object SpliceFields extends Sentinel[JField](new JField("", JNull))
 
+object SpliceFieldNameOpt extends Sentinel[JField](new JField("", JNull))
+
 object SpliceFieldName {
   def apply(x: JValue) = JField(null, x)
   def unapply(f: JField): Option[JValue] = f match {

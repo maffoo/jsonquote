@@ -113,7 +113,15 @@ trait Parser[V, F] {
         it.head._1 match {
           case COLON =>
             it.next()
-            makeSpliceFieldName(parseValue)
+            it.head._1 match {
+              case OPTIONAL =>
+                it.next()
+                expect[Token](SPLICE)
+                makeSpliceFieldNameOpt()
+
+              case _ =>
+                makeSpliceFieldName(parseValue)
+            }
 
           case _ =>
             makeSpliceField()
@@ -137,6 +145,7 @@ trait Parser[V, F] {
   def makeField(k: String, v: V): F
   def makeSpliceField(): F
   def makeSpliceFields(): F
+  def makeSpliceFieldNameOpt(): F
   def makeSpliceFieldName(v: V): F
   def makeSpliceFieldOpt(k: String): F
 }

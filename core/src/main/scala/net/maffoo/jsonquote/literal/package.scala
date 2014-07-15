@@ -19,6 +19,7 @@ package object literal {
       case SpliceField  => spliceField(args.next)
       case SpliceFields => spliceFields(args.next)
       case SpliceFieldName => spliceFieldName(args.next)
+      case SpliceFieldNameOpt => spliceFieldNameOpt(args.next, args.next)
       case SpliceFieldOpt(k) => spliceFieldOpt(k, args.next)
 
       case Chunk(s) => Literal(Constant(s))
@@ -90,6 +91,24 @@ package object literal {
         q"""$e.map { v => implicitly[Writes[String]].write($k) + ":" + $writer.write(v) }.getOrElse("")"""
 
       case t => c.abort(e.pos, s"required Option[_] but got $t")
+    }
+
+    def spliceFieldNameOpt(k: Tree, v: Tree): Tree = {
+      k.tpe match {
+        case t if t =:= c.typeOf[String] =>
+        case t => c.abort(k.pos, s"required String but got $t")
+      }
+      v.tpe match {
+        case t if t <:< c.typeOf[None.type] => Literal(Constant(""))
+        case t if t <:< c.typeOf[Option[Json]] =>
+          q"""$v.map { v => implicitly[Writes[String]].write($k) + ":" + v }.getOrElse("")"""
+        case t if t <:< c.typeOf[Option[Any]] =>
+          val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
+          val writer = inferWriter(v, valueTpe)
+          q"""$v.map { v => implicitly[Writes[String]].write($k) + ":" + $writer.write(v) }.getOrElse("")"""
+
+        case t => c.abort(v.pos, s"required Option[_] but got $t")
+      }
     }
 
     def spliceFieldName(e: Tree): Tree = e.tpe match {

@@ -13,6 +13,7 @@ case object SpliceValues extends Segment
 case object SpliceField extends Segment
 case object SpliceFields extends Segment
 case object SpliceFieldName extends Segment
+case object SpliceFieldNameOpt extends Segment
 case class SpliceFieldOpt(k: String) extends Segment
 
 object Parse {
@@ -158,7 +159,15 @@ object Parse {
         it.head._1 match {
           case COLON =>
             it.next()
-            Iterator(SpliceFieldName, Chunk(":")) ++ parseValue
+            it.head._1 match {
+              case OPTIONAL =>
+                it.next()
+                expect[Token](SPLICE)
+                Iterator(SpliceFieldNameOpt)
+
+              case _ =>
+                Iterator(SpliceFieldName, Chunk(":")) ++ parseValue
+            }
 
           case _ =>
             Iterator(SpliceField)

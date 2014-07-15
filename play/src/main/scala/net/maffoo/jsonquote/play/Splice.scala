@@ -18,6 +18,8 @@ object SpliceValues extends Sentinel[JsValue](new JsObject(Nil))
 object SpliceField  extends Sentinel[(String, JsValue)](("", new JsObject(Nil)))
 object SpliceFields extends Sentinel[(String, JsValue)](("", new JsObject(Nil)))
 
+object SpliceFieldNameOpt extends Sentinel[(String, JsValue)](("", new JsObject(Nil)))
+
 object SpliceFieldName {
   def apply(x: JsValue) = (null, x)
   def unapply(f: (String, JsValue)): Option[JsValue] = f match {
