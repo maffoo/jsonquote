@@ -36,7 +36,6 @@ object MyBuild extends Build {
     settings = buildSettings ++ bintraySettings ++ Seq(
       libraryDependencies ++= Seq(
         scalaOrganization.value % "scala-reflect" % scalaVersion.value,
-        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1",
         "org.scalatest" %% "scalatest" % "2.2.0" % "test"
       )
     )
