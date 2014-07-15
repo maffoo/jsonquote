@@ -16,6 +16,7 @@ object Parse extends Parser[JValue, JField] {
   def makeField(k: String, v: JValue): JField = JField(k, v)
   def makeSpliceField(): JField = SpliceField()
   def makeSpliceFields(): JField = SpliceFields()
+  def makeSpliceFieldNameOpt: JField = SpliceFieldNameOpt()
   def makeSpliceFieldName(v: JValue): JField = SpliceFieldName(v)
   def makeSpliceFieldOpt(k: String): JField = SpliceFieldOpt(k)
 }

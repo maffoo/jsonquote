@@ -31,6 +31,14 @@ object SpliceFields {
   }
 }
 
+object SpliceFieldNameOpt {
+  def apply(): (String, JsValue) = ("__splice_field_name_opt__%016X".format(Random.nextLong), JsNull)
+  def unapply(f: (String, JsValue)): Boolean = f match {
+    case (f, JsNull) if f.startsWith("__splice_field_name_opt__") => true
+    case _ => false
+  }
+}
+
 object SpliceFieldName {
   def apply(x: JsValue) = ("__splice_field_name__%016X".format(Random.nextLong), x)
   def unapply(f: (String, JsValue)): Option[JsValue] = f match {

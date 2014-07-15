@@ -21,6 +21,7 @@ package object lift {
         val ms = members.map {
           case SpliceField()      => q"Seq(${spliceField(args.next)})"
           case SpliceFields()     => spliceFields(args.next)
+          case SpliceFieldNameOpt() => spliceFieldNameOpt(args.next, args.next)
           case SpliceFieldName(v) => q"Seq(JField(${spliceFieldName(args.next)}, ${splice(v)}))"
           case SpliceFieldOpt(k)  => spliceFieldOpt(k, args.next)
           case JField(k, v)       => q"Seq(JField($k, ${splice(v)}))"
@@ -114,6 +115,23 @@ package object lift {
     def spliceFieldName(e: Tree): Tree = e.tpe match {
       case t if t =:= c.typeOf[String] => e
       case t => c.abort(e.pos, s"required String but got $t")
+    }
+
+    def spliceFieldNameOpt(k: Tree, v: Tree): Tree = {
+      k.tpe match {
+        case t if t =:= c.typeOf[String] =>
+        case t => c.abort(k.pos, s"required String but got $t")
+      }
+      v.tpe match {
+        case t if t <:< c.typeOf[None.type] => q"Nil"
+        case t if t <:< c.typeOf[Option[JValue]] => q"$v.toIterable.map(v => JField($k, v))"
+        case t if t <:< c.typeOf[Option[Any]] =>
+          val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
+          val writer = inferWriter(v, valueTpe)
+          q"$v.toIterable.map { v => JField($k, $writer.write(v)) }"
+
+        case t => c.abort(v.pos, s"required Option[_] but got $t")
+      }
     }
 
     // return a list of type parameters in the given type

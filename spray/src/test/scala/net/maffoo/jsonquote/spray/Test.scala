@@ -89,6 +89,10 @@ class SprayTest extends FunSuite with Matchers {
     val vOpt = Some(JsNumber(1))
     check(json"{a:? $vOpt}", """{"a": 1}""")
     check(json"{a:? $None}", """{}""")
+
+    val k = "a"
+    check(json"{$k:? $vOpt}", """{"a": 1}""")
+    check(json"{$k:? $None}", """{}""")
   }
 
   test("can inject Option field values with implicit Writes") {
