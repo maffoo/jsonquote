@@ -4,7 +4,7 @@ import bintray.Plugin._
 import com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseKeys
 
 object BuildSettings {
-  val buildVersion = "0.1.3"
+  val buildVersion = "0.1.4"
   val buildScalaVersion = "2.11.1"
   val buildScalaOrganization = "org.scala-lang"
 
