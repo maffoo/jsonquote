@@ -63,7 +63,8 @@ object MyBuild extends Build {
     "jsonquote-spray",
     file("spray"),
     settings = buildSettings ++ bintraySettings ++ Seq(
-      libraryDependencies += "io.spray" % "spray-json_2.11.0-RC4" % "1.2.6"
+      resolvers += "Spray repository" at "http://repo.spray.io",
+      libraryDependencies += "io.spray" %% "spray-json" % "1.2.6"
     )
   ) dependsOn(core % "compile->compile;test->test")
 }

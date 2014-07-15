@@ -16,6 +16,10 @@ object Writes {
     def write(a: JValue): JValue = a
   }
 
+  implicit object BoolWrites extends Writes[Boolean] {
+    def write(b: Boolean): JValue = JBool(b)
+  }
+
   implicit object ByteWrites extends Writes[Byte] {
     def write(n: Byte): JValue = JInt(n)
   }
