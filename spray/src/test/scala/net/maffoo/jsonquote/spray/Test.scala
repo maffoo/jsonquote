@@ -138,7 +138,7 @@ class SprayTest extends FunSuite with Matchers {
 
     val users = Seq(("Bob", 31, Some("bob@gmail.com")), ("Kiki", 25, None))
 
-    // TODO: why do we need the : Seq[JsValue] type ascription here?
+    // TODO: find a way to avoid the need for .toSeq here
     val quoteA = json"""{
       users: [..${
         users.map { case (name, age, email) =>
@@ -147,12 +147,12 @@ class SprayTest extends FunSuite with Matchers {
             age: $age,
             email: $email
           }"""
-        }: Seq[JsValue]
+        }.toSeq
       }]
     }"""
 
     // spray already knows how to convert Seq[JsValue] to json array
-    // still need the type ascription here
+    // still need the .toSeq here
     val quoteB = json"""{
       users: ${
         users.map { case (name, age, email) =>
@@ -161,7 +161,7 @@ class SprayTest extends FunSuite with Matchers {
             age: $age,
             email: $email
           }"""
-        }: Seq[JsValue]
+        }.toSeq
       }
     }"""
 
