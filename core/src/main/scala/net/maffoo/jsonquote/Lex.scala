@@ -139,7 +139,7 @@ object Lex {
 
   def lexInt(implicit it: BufferedIterator[(Char, Pos)]): String = {
     it.head._1 match {
-      case '0' => it.next().toString
+      case '0' => it.next()._1.toString
       case '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
         it.next()._1 + acceptRun(DIGIT)
     }

@@ -22,6 +22,7 @@ class SprayTest extends FunSuite with Matchers {
   }
 
   test("can use bare identifiers for object keys") {
+    check(json"{ test0: 0 }", """{ "test0": 0 }""")
     check(json"{ test: 1 }", """{ "test": 1 }""")
     check(json"{ test-2: 2 }", """{ "test-2": 2 }""")
     check(json"{ test_3: 3 }", """{ "test_3": 3 }""")
