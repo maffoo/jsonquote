@@ -10,7 +10,6 @@ trait Writes[A] {
 }
 
 // Converters for basic scala types.
-// TODO: expand this
 object Writes {
   implicit object JValueWrites extends Writes[JValue] {
     def write(a: JValue): JValue = a
@@ -36,7 +35,7 @@ object Writes {
     def write(n: Long): JValue = JInt(n)
   }
 
-  implicit object DoubeWrites extends Writes[Double] {
+  implicit object DoubleWrites extends Writes[Double] {
     def write(n: Double): JValue = JDouble(n)
   }
 
