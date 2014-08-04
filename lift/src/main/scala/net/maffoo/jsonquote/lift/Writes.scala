@@ -5,7 +5,7 @@ import net.liftweb.json._
 // Typeclasses for converting to lift JValues.
 // Borrowed from the Writes mechanism in play-json.
 
-trait Writes[A] {
+trait Writes[-A] {
   def write(a: A): JValue
 }
 
