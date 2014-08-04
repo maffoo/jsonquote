@@ -12,6 +12,15 @@ package object play {
   def jsonImpl(c: Context)(args: c.Expr[Any]*): c.Expr[JsValue] = {
     import c.universe._
 
+    // fully-qualified symbols and types (for hygiene)
+    val bigDecimal = q"_root_.scala.math.BigDecimal"
+    val nil = q"_root_.scala.collection.immutable.Nil"
+    val seq = q"_root_.scala.Seq"
+    val indexedSeq = q"_root_.scala.IndexedSeq"
+    val jsArray = q"_root_.play.api.libs.json.JsArray"
+    val jsObject = q"_root_.play.api.libs.json.JsObject"
+    val writesT = tq"_root_.play.api.libs.json.Writes"
+
     // convert the given json AST to a tree with arguments spliced in at the correct locations
     def splice(js: JsValue)(implicit args: Iterator[Tree]): Tree = js match {
       case SpliceValue()  => spliceValue(args.next)
@@ -19,35 +28,35 @@ package object play {
 
       case JsObject(members) =>
         val ms = members.map {
-          case SpliceField()      => q"Seq(${spliceField(args.next)})"
+          case SpliceField()      => q"$seq(${spliceField(args.next)})"
           case SpliceFields()     => spliceFields(args.next)
           case SpliceFieldNameOpt() => spliceFieldNameOpt(args.next, args.next)
-          case SpliceFieldName(v) => q"Seq((${spliceFieldName(args.next)}, ${splice(v)}))"
+          case SpliceFieldName(v) => q"$seq((${spliceFieldName(args.next)}, ${splice(v)}))"
           case SpliceFieldOpt(k)  => spliceFieldOpt(k, args.next)
-          case (k, v)             => q"Seq(($k, ${splice(v)}))"
+          case (k, v)             => q"$seq(($k, ${splice(v)}))"
         }
-        q"JsObject(IndexedSeq(..$ms).flatten)"
+        q"$jsObject($indexedSeq(..$ms).flatten)"
 
       case JsArray(elements) =>
         val es = elements.map {
-          case SpliceValue()  => q"Seq(${spliceValue(args.next)})"
+          case SpliceValue()  => q"$seq(${spliceValue(args.next)})"
           case SpliceValues() => spliceValues(args.next)
-          case e              => q"Seq(${splice(e)})"
+          case e              => q"$seq(${splice(e)})"
         }
-        q"JsArray(IndexedSeq(..$es).flatten)"
+        q"$jsArray($indexedSeq(..$es).flatten)"
 
-      case JsString(s)      => q"JsString($s)"
-      case JsNumber(n)      => q"JsNumber(BigDecimal(${n.toString}))"
-      case JsBoolean(true)  => q"JsBoolean(true)"
-      case JsBoolean(false) => q"JsBoolean(false)"
-      case JsNull           => q"JsNull"
+      case JsString(s)      => q"_root_.play.api.libs.json.JsString($s)"
+      case JsNumber(n)      => q"_root_.play.api.libs.json.JsNumber($bigDecimal(${n.toString}))"
+      case JsBoolean(true)  => q"_root_.play.api.libs.json.JsBoolean(true)"
+      case JsBoolean(false) => q"_root_.play.api.libs.json.JsBoolean(false)"
+      case JsNull           => q"_root_.play.api.libs.json.JsNull"
     }
 
     def spliceValue(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[JsValue] => e
       case t =>
         inferWriter(e, t)
-        q"implicitly[Writes[$t]].writes($e)"
+        q"implicitly[$writesT[$t]].writes($e)"
     }
 
     def spliceValues(e: Tree): Tree = e.tpe match {
@@ -57,7 +66,7 @@ package object play {
         val writer = inferWriter(e, valueTpe)
         q"$e.map($writer.writes)"
 
-      case t if t <:< c.typeOf[None.type] => q"Nil"
+      case t if t <:< c.typeOf[None.type] => nil
       case t if t <:< c.typeOf[Option[JsValue]] => e
       case t if t <:< c.typeOf[Option[Any]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
@@ -84,7 +93,7 @@ package object play {
         val writer = inferWriter(e, valueTpe)
         q"$e.map { case (k, v) => (k, $writer.writes(v)) }"
 
-      case t if t <:< c.typeOf[None.type] => q"Nil"
+      case t if t <:< c.typeOf[None.type] => nil
       case t if t <:< c.typeOf[Option[(String, JsValue)]] => e
       case t if t <:< c.typeOf[Option[(String, Any)]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[(String, Nothing)]] :: Nil))(2)
@@ -95,7 +104,7 @@ package object play {
     }
 
     def spliceFieldOpt(k: String, e: Tree): Tree = e.tpe match {
-      case t if t <:< c.typeOf[None.type] => q"Nil"
+      case t if t <:< c.typeOf[None.type] => nil
       case t if t <:< c.typeOf[Option[JsValue]] => q"$e.toIterable.map(v => ($k, v))"
       case t if t <:< c.typeOf[Option[Any]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
@@ -116,7 +125,7 @@ package object play {
         case t => c.abort(k.pos, s"required String but got $t")
       }
       v.tpe match {
-        case t if t <:< c.typeOf[None.type] => q"Nil"
+        case t if t <:< c.typeOf[None.type] => nil
         case t if t <:< c.typeOf[Option[JsValue]] => q"$v.toIterable.map(v => ($k, v))"
         case t if t <:< c.typeOf[Option[Any]] =>
           val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
