@@ -16,14 +16,14 @@ artifact as a maven dependency for the json library you would like to use:
 resolvers += "bintray-maffoo" at "http://dl.bintray.com/maffoo/maven"
 
 // use the basic 'literal' json support built in to jsonquote
-libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.1.4"
+libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.1.5"
 
 // use one of the supported third-party json libraries
-libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.1.4"
+libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.1.5"
 
-libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.1.4"
+libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.1.5"
 
-libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.1.4"
+libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.1.5"
 
 ```
 
@@ -89,6 +89,25 @@ b: None.type = None
 scala> json"{..$a, ..$b}"
 res6: play.api.libs.json.JsValue = {"a":"here"}
 ```
+
+Note that when interpolating multiple values, you may see type errors if you try to
+map over collections. This is due to interactions between scala's type inference
+on collection builders, macro defs, and the StringContext method call into which
+the compiler transforms the interpolated string. This requires giving the compiler
+a hint about what concrete collection type you want:
+```scala
+scala> val xs = Seq("a" -> 1, "b" -> 2)
+xs: Seq[(String, Int)] = List((a,1), (b,2))
+
+scala> json"[..${xs.map(_._1)}]"
+<console>:15: error: required Iterable[_] but got Any
+              json"[..${xs.map(_._1)}]"
+                              ^
+
+scala> json"[..${xs.map(_._1).toSeq}]"
+res1: play.api.libs.json.JsArray = ["a","b"]
+```
+
 
 Alternately, we can define optional fields with a name but optional value that
 will be dropped from the final result if the value is None:

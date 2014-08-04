@@ -12,6 +12,16 @@ package object lift {
   def jsonImpl(c: Context)(args: c.Expr[Any]*): c.Expr[JValue] = {
     import c.universe._
 
+    // fully-qualified symbols and types (for hygiene)
+    val bigInt = q"_root_.scala.math.BigInt"
+    val list = q"_root_.scala.collection.immutable.List"
+    val nil = q"_root_.scala.collection.immutable.Nil"
+    val seq = q"_root_.scala.Seq"
+    val jArray = q"_root_.net.liftweb.json.JArray"
+    val jField = q"_root_.net.liftweb.json.JField"
+    val jObject = q"_root_.net.liftweb.json.JObject"
+    val writesT = tq"_root_.net.maffoo.jsonquote.lift.Writes"
+
     // convert the given json AST to a tree with arguments spliced in at the correct locations
     def splice(js: JValue)(implicit args: Iterator[Tree]): Tree = js match {
       case SpliceValue()  => spliceValue(args.next)
@@ -19,35 +29,35 @@ package object lift {
 
       case JObject(members) =>
         val ms = members.map {
-          case SpliceField()      => q"Seq(${spliceField(args.next)})"
+          case SpliceField()      => q"$seq(${spliceField(args.next)})"
           case SpliceFields()     => spliceFields(args.next)
           case SpliceFieldNameOpt() => spliceFieldNameOpt(args.next, args.next)
-          case SpliceFieldName(v) => q"Seq(JField(${spliceFieldName(args.next)}, ${splice(v)}))"
+          case SpliceFieldName(v) => q"$seq($jField(${spliceFieldName(args.next)}, ${splice(v)}))"
           case SpliceFieldOpt(k)  => spliceFieldOpt(k, args.next)
-          case JField(k, v)       => q"Seq(JField($k, ${splice(v)}))"
+          case JField(k, v)       => q"$seq($jField($k, ${splice(v)}))"
         }
-        q"JObject(List(..$ms).flatten)"
+        q"$jObject($list(..$ms).flatten)"
 
       case JArray(elements) =>
         val es = elements.map {
-          case SpliceValue()  => q"Seq(${spliceValue(args.next)})"
+          case SpliceValue()  => q"$seq(${spliceValue(args.next)})"
           case SpliceValues() => spliceValues(args.next)
-          case e              => q"Seq(${splice(e)})"
+          case e              => q"$seq(${splice(e)})"
         }
-        q"JArray(List(..$es).flatten)"
+        q"$jArray($list(..$es).flatten)"
 
-      case JString(s) => q"JString($s)"
-      case JDouble(n) => q"JDouble($n)"
-      case JInt(n)    => q"JInt(BigInt(${n.toString}))"
-      case JBool(b)   => q"JBool($b)"
-      case JNull      => q"JNull"
+      case JString(s) => q"_root_.net.liftweb.json.JString($s)"
+      case JDouble(n) => q"_root_.net.liftweb.json.JDouble($n)"
+      case JInt(n)    => q"_root_.net.liftweb.json.JInt($bigInt(${n.toString}))"
+      case JBool(b)   => q"_root_.net.liftweb.json.JBool($b)"
+      case JNull      => q"_root_.net.liftweb.json.JNull"
     }
 
     def spliceValue(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[JValue] => e
       case t =>
         inferWriter(e, t)
-        q"implicitly[Writes[$t]].write($e)"
+        q"implicitly[$writesT[$t]].write($e)"
     }
 
     def spliceValues(e: Tree): Tree = e.tpe match {
@@ -57,7 +67,7 @@ package object lift {
         val writer = inferWriter(e, valueTpe)
         q"$e.map($writer.write)"
 
-      case t if t <:< c.typeOf[None.type] => q"Nil"
+      case t if t <:< c.typeOf[None.type] => nil
       case t if t <:< c.typeOf[Option[JValue]] => e
       case t if t <:< c.typeOf[Option[Any]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
@@ -70,11 +80,11 @@ package object lift {
     def spliceField(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[JField] => e
       case t if t <:< c.typeOf[(String, JValue)] =>
-        q"val (k, v) = $e; JField(k, v)"
+        q"val (k, v) = $e; $jField(k, v)"
       case t if t <:< c.typeOf[(String, Any)] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[(String, Nothing)] :: Nil))(1)
         val writer = inferWriter(e, valueTpe)
-        q"val (k, v) = $e; JField(k, $writer.write(v))"
+        q"val (k, v) = $e; $jField(k, $writer.write(v))"
 
       case t => c.abort(e.pos, s"required Iterable[(String, _)] but got $t")
     }
@@ -82,32 +92,32 @@ package object lift {
     def spliceFields(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[Iterable[JField]] => e
       case t if t <:< c.typeOf[Iterable[(String, JValue)]] =>
-        q"$e.map { case (k, v) => JField(k, v) }"
+        q"$e.map { case (k, v) => $jField(k, v) }"
       case t if t <:< c.typeOf[Iterable[(String, Any)]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Iterable[(String, Nothing)]] :: Nil))(2)
         val writer = inferWriter(e, valueTpe)
-        q"$e.map { case (k, v) => JField(k, $writer.write(v)) }"
+        q"$e.map { case (k, v) => $jField(k, $writer.write(v)) }"
 
-      case t if t <:< c.typeOf[None.type] => q"Nil"
+      case t if t <:< c.typeOf[None.type] => nil
       case t if t <:< c.typeOf[Option[JField]] =>
         q"$e.toIterable"
       case t if t <:< c.typeOf[Option[(String, JValue)]] =>
-        q"$e.toIterable.map { case (k, v) => JField(k, v) }"
+        q"$e.toIterable.map { case (k, v) => $jField(k, v) }"
       case t if t <:< c.typeOf[Option[(String, Any)]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[(String, Nothing)]] :: Nil))(2)
         val writer = inferWriter(e, valueTpe)
-        q"$e.toIterable.map { case (k, v) => JField(k, $writer.write(v)) }"
+        q"$e.toIterable.map { case (k, v) => $jField(k, $writer.write(v)) }"
 
       case t => c.abort(e.pos, s"required Iterable[(String, _)] but got $t")
     }
 
     def spliceFieldOpt(k: String, e: Tree): Tree = e.tpe match {
-      case t if t <:< c.typeOf[None.type] => q"Nil"
-      case t if t <:< c.typeOf[Option[JValue]] => q"$e.toIterable.map(v => JField($k, v))"
+      case t if t <:< c.typeOf[None.type] => nil
+      case t if t <:< c.typeOf[Option[JValue]] => q"$e.toIterable.map(v => $jField($k, v))"
       case t if t <:< c.typeOf[Option[Any]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
         val writer = inferWriter(e, valueTpe)
-        q"$e.toIterable.map { v => JField($k, $writer.write(v)) }"
+        q"$e.toIterable.map { v => $jField($k, $writer.write(v)) }"
 
       case t => c.abort(e.pos, s"required Option[_] but got $t")
     }
@@ -123,12 +133,12 @@ package object lift {
         case t => c.abort(k.pos, s"required String but got $t")
       }
       v.tpe match {
-        case t if t <:< c.typeOf[None.type] => q"Nil"
-        case t if t <:< c.typeOf[Option[JValue]] => q"$v.toIterable.map(v => JField($k, v))"
+        case t if t <:< c.typeOf[None.type] => nil
+        case t if t <:< c.typeOf[Option[JValue]] => q"$v.toIterable.map(v => $jField($k, v))"
         case t if t <:< c.typeOf[Option[Any]] =>
           val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
           val writer = inferWriter(v, valueTpe)
-          q"$v.toIterable.map { v => JField($k, $writer.write(v)) }"
+          q"$v.toIterable.map { v => $jField($k, $writer.write(v)) }"
 
         case t => c.abort(v.pos, s"required Option[_] but got $t")
       }

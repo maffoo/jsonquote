@@ -35,7 +35,10 @@ object Parse {
     val b = new StringBuilder
     while (it.hasNext) {
       val s = it.next
-      b.append(if (s.startsWith(",") && b.last == ',') s.drop(1) else s)
+      if (s.nonEmpty && ",]}".contains(s(0)) && b.last == ',') {
+        b.deleteCharAt(b.length - 1)
+      }
+      b.append(s)
     }
     new Json(b.toString)
   }

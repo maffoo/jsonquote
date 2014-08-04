@@ -23,6 +23,7 @@ class LiftTest extends FunSuite with Matchers {
   }
 
   test("can use bare identifiers for object keys") {
+    check(json"{ test0: 0 }", """{ "test0": 0 }""")
     check(json"{ test: 1 }", """{ "test": 1 }""")
     check(json"{ test-2: 2 }", """{ "test-2": 2 }""")
     check(json"{ test_3: 3 }", """{ "test_3": 3 }""")
@@ -136,7 +137,7 @@ class LiftTest extends FunSuite with Matchers {
 
     val users = Seq(("Bob", 31, Some("bob@gmail.com")), ("Kiki", 25, None))
 
-    // TODO: why do we need the : Seq[JValue] type ascription here?
+    // TODO: find a way to avoid the need for .toSeq here
     val quoteA = json"""{
       users: [..${
         users.map { case (name, age, email) =>
@@ -145,12 +146,12 @@ class LiftTest extends FunSuite with Matchers {
             age: $age,
             email:? $email
           }"""
-        }: Seq[JValue]
+        }.toSeq
       }]
     }"""
 
     // we defined a Serializer for Seq[JValue]
-    // still need the type ascription here
+    // still need the .toSeq here
     val quoteB = json"""{
       users: ${
         users.map { case (name, age, email) =>
@@ -159,7 +160,7 @@ class LiftTest extends FunSuite with Matchers {
             age: $age,
             email:? $email
           }"""
-        }: Seq[JValue]
+        }.toSeq
       }
     }"""
 
