@@ -16,14 +16,14 @@ artifact as a maven dependency for the json library you would like to use:
 resolvers += "bintray-maffoo" at "http://dl.bintray.com/maffoo/maven"
 
 // use the basic 'literal' json support built in to jsonquote
-libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.1.4"
+libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.1.5"
 
 // use one of the supported third-party json libraries
-libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.1.4"
+libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.1.5"
 
-libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.1.4"
+libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.1.5"
 
-libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.1.4"
+libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.1.5"
 
 ```
 
