@@ -119,7 +119,7 @@ class LiteralTest extends FunSuite with Matchers {
     val jsonObject = Json("""{
       users: [
         { name: "Bob", age: 31, email: "bob@gmail.com" },
-        { name: "Kiki", age: 25, email: null }
+        { name: "Kiki", age: 25 }
       ]
     }""")
 
@@ -132,7 +132,7 @@ class LiteralTest extends FunSuite with Matchers {
           json"""{
             name: $name,
             age: $age,
-            email: $email
+            email:? $email
           }"""
         }.toSeq
       }]
@@ -146,7 +146,7 @@ class LiteralTest extends FunSuite with Matchers {
           json"""{
             name: $name,
             age: $age,
-            email: $email
+            email:? $email
           }"""
         }.toSeq
       }
@@ -157,7 +157,7 @@ class LiteralTest extends FunSuite with Matchers {
       json"""{
         name: $name,
         age: $age,
-        email: $email
+        email:? $email
       }"""
     }
     val quoteC = json"""{
