@@ -13,17 +13,17 @@ Using jsonquote
 jsonquote is published on bintray. To include it in your project, simply add the desired
 artifact as a maven dependency for the json library you would like to use:
 ```scala
-resolvers += "bintray-maffoo" at "http://dl.bintray.com/maffoo/maven"
+resolvers += "bintray-jcenter" at "http://jcenter.bintray.com/"
 
 // use the basic 'literal' json support built in to jsonquote
-libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.1.5"
+libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.1.6"
 
 // use one of the supported third-party json libraries
-libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.1.5"
+libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.1.6"
 
-libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.1.5"
+libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.1.6"
 
-libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.1.5"
+libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.1.6"
 
 ```
 
