@@ -173,4 +173,26 @@ class LiteralTest extends FunSuite with Matchers {
     val source = Source.fromURL(getClass.getResource("/sample.json"))
     Json(source.getLines.mkString)
   }
+
+  test("json parser can handle inline comments") {
+    check(
+      json"""{ /* this is a test */ foo: "foo" } // trailing comment""",
+      """{"foo":"foo"}"""
+    )
+    check(
+      json"""{
+        // some stuff here: ]
+        key /* the key */ : // value next
+          "value" /* that was the value */
+        ,
+
+        /*********************************
+         * block comments can span lines *
+         * unlike // comments            *
+         *********************************/
+        key2 : "value2"
+      }""",
+      """{"key":"value","key2":"value2"}"""
+    )
+  }
 }

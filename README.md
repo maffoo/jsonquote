@@ -13,17 +13,17 @@ Using jsonquote
 jsonquote is published on bintray. To include it in your project, simply add the desired
 artifact as a maven dependency for the json library you would like to use:
 ```scala
-resolvers += "bintray-maffoo" at "http://dl.bintray.com/maffoo/maven"
+resolvers += "bintray-jcenter" at "http://jcenter.bintray.com/"
 
 // use the basic 'literal' json support built in to jsonquote
-libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.1.5"
+libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.1.6"
 
 // use one of the supported third-party json libraries
-libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.1.5"
+libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.1.6"
 
-libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.1.5"
+libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.1.6"
 
-libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.1.5"
+libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.1.6"
 
 ```
 
@@ -151,7 +151,8 @@ res9: play.api.libs.json.JsValue = {"foo":{"a":"a","b":1}}
 ```
 
 Even without any interpolation, we get compile-time checking of our json literals, with
-some syntactic niceties like the ability to omit quotes around field names:
+some syntactic niceties like the ability to omit quotes around field names, and inline
+comments in your json literals:
 ```scala
 scala> val list = json"[1, 2, 3"
 error: exception during macro expansion: 
@@ -159,4 +160,7 @@ java.lang.IllegalArgumentException: requirement failed: expected ',' but got EOF
 
 scala> json"{ a: 1, b: 2 }"
 res18: play.api.libs.json.JsValue = {"a":1,"b":2}
+
+scala> json"{ a: 1 /* this is awesome */, b: 2 /* this is, too */ } // that was great"
+res19: play.api.libs.json.JsValue = {"a":1,"b":2}
 ```
