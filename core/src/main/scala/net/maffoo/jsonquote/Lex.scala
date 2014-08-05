@@ -30,6 +30,8 @@ object Lex {
   import Token._
   import Util._
 
+  type State = BufferedIterator[(Char, Pos)]
+
   def apply(s: String): Iterator[(Token, Pos)] = lex(s) ++ Iterator((EOF, Pos(s, s.length)))
 
   def apply(parts: Seq[String]): Iterator[(Token, Pos)] = {
@@ -43,7 +45,7 @@ object Lex {
   def lex(s: String): Iterator[(Token, Pos)] =
     lex(s.iterator.zipWithIndex.map { case (c, i) => (c, Pos(s, i)) }.buffered)
 
-  def lex(implicit it: BufferedIterator[(Char, Pos)]): Iterator[(Token, Pos)] = new Iterator[(Token, Pos)] {
+  def lex(implicit it: State): Iterator[(Token, Pos)] = new Iterator[(Token, Pos)] {
     def hasNext: Boolean = {
       skipWhitespace
       it.hasNext
@@ -69,12 +71,12 @@ object Lex {
     }
   }
 
-  def lexLiteral(lit: Literal)(implicit it: BufferedIterator[(Char, Pos)]): Literal = {
+  def lexLiteral(lit: Literal)(implicit it: State): Literal = {
     for (c <- lit.value) expect[Char](c)
     lit
   }
 
-  def lexToken(implicit it: BufferedIterator[(Char, Pos)]): Token = {
+  def lexToken(implicit it: State): Token = {
     val b = new StringBuilder
     b += accept(c => c.isLetter || c == '_')
     b ++= acceptRun(c => c.isLetterOrDigit || c == '_' || c == '-')
@@ -86,7 +88,7 @@ object Lex {
     }
   }
 
-  def lexString(implicit it: BufferedIterator[(Char, Pos)]): Token = {
+  def lexString(implicit it: State): Token = {
     val b = new StringBuilder
     expect[Char]('"')
     while (it.head._1 != '"') b += lexChar
@@ -94,7 +96,7 @@ object Lex {
     STRING(b.toString)
   }
 
-  def lexChar(implicit it: BufferedIterator[(Char, Pos)]): Char = {
+  def lexChar(implicit it: State): Char = {
     it.head._1 match {
       case '\\' =>
         it.next()
@@ -121,7 +123,7 @@ object Lex {
   val DIGIT = "0123456789"
   val HEX_DIGIT = "0123456789abcdefABCDEF"
 
-  def lexNumber(implicit it: BufferedIterator[(Char, Pos)]): Token = {
+  def lexNumber(implicit it: State): Token = {
     val b = new StringBuilder
     b ++= acceptOpt("-")
     b ++= lexInt
@@ -137,7 +139,7 @@ object Lex {
     NUMBER(BigDecimal(b.toString))
   }
 
-  def lexInt(implicit it: BufferedIterator[(Char, Pos)]): String = {
+  def lexInt(implicit it: State): String = {
     it.head._1 match {
       case '0' => it.next()._1.toString
       case '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
@@ -145,19 +147,49 @@ object Lex {
     }
   }
 
-  private def skipWhitespace(implicit it: BufferedIterator[(Char, Pos)]): Unit =
+  @scala.annotation.tailrec
+  private def skipWhitespace(implicit it: State): Unit = {
     while (it.hasNext && it.head._1.isWhitespace) it.next()
+    if (it.hasNext && it.head._1 == '/') {
+      skipComment
+      skipWhitespace
+    }
+  }
 
-  private def accept(f: Char => Boolean)(implicit it: BufferedIterator[(Char, Pos)]): Char = {
+  private def skipComment(implicit it: State): Unit = {
+    expect('/')
+    acceptOpt("/*") match {
+      case Some('/') => skipLineComment
+      case Some('*') => skipBlockComment
+      case _ => sys.error("expected // or /* to start comment")
+    }
+  }
+
+  private def skipLineComment(implicit it: State): Unit = {
+    acceptRun(!"\r\n".contains(_))
+    acceptRun("\r\n".contains(_))
+  }
+
+  @scala.annotation.tailrec
+  private def skipBlockComment(implicit it: State): Unit = {
+    acceptRun(_ != '*')
+    expect('*')
+    acceptOpt("/") match {
+      case None => skipBlockComment
+      case Some(_) => // done
+    }
+  }
+
+  private def accept(f: Char => Boolean)(implicit it: State): Char = {
     val (c, _) = it.next()
     require(f(c))
     c
   }
 
-  private def acceptOpt(f: Char => Boolean)(implicit it: BufferedIterator[(Char, Pos)]): Option[Char] =
+  private def acceptOpt(f: Char => Boolean)(implicit it: State): Option[Char] =
     if (it.hasNext && f(it.head._1)) Some(it.next()._1) else None
 
-  private def acceptRun(f: Char => Boolean)(implicit it: BufferedIterator[(Char, Pos)]): String = {
+  private def acceptRun(f: Char => Boolean)(implicit it: State): String = {
     val b = new StringBuilder
     var done = false
     while (!done) {
@@ -169,7 +201,7 @@ object Lex {
     b.toString
   }
 
-  private def accept(s: String)(implicit it: BufferedIterator[(Char, Pos)]): Char = accept(s contains _)
-  private def acceptOpt(s: String)(implicit it: BufferedIterator[(Char, Pos)]): Option[Char] = acceptOpt(s contains _)
-  private def acceptRun(s: String)(implicit it: BufferedIterator[(Char, Pos)]): String = acceptRun(s contains _)
+  private def accept(s: String)(implicit it: State): Char = accept(s contains _)
+  private def acceptOpt(s: String)(implicit it: State): Option[Char] = acceptOpt(s contains _)
+  private def acceptRun(s: String)(implicit it: State): String = acceptRun(s contains _)
 }
