@@ -2,7 +2,7 @@ package net.maffoo.jsonquote
 
 import net.liftweb.json._
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 package object lift {
   implicit class RichJsonSringContext(val sc: StringContext) extends AnyVal {

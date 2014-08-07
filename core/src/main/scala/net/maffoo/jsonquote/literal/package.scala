@@ -1,7 +1,7 @@
 package net.maffoo.jsonquote
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 package object literal {
   implicit class RichJsonStringContext(val sc: StringContext) extends AnyVal {
