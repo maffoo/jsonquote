@@ -5,6 +5,13 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 package object lift {
+  /**
+   * Rendering JValue produces valid json literal
+   */
+  implicit class LiftToLiteralJson(val json: JValue) extends AnyVal {
+    def toLiteral: literal.Json = new literal.Json(compact(render(json)))
+  }
+
   implicit class RichJsonSringContext(val sc: StringContext) extends AnyVal {
     def json(args: Any*): JValue = macro jsonImpl
   }

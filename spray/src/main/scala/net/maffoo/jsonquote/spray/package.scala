@@ -5,6 +5,13 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 package object spray {
+  /**
+   * Rendering JsValue produces valid json literal
+   */
+  implicit class SprayToLiteralJson(val json: JsValue) extends AnyVal {
+    def toLiteral: literal.Json = new literal.Json(CompactPrinter(json))
+  }
+
   implicit class RichJsonSringContext(val sc: StringContext) extends AnyVal {
     def json(args: Any*): JsValue = macro jsonImpl
   }
