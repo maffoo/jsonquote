@@ -4,7 +4,6 @@ import net.maffoo.jsonquote._
 import net.maffoo.jsonquote.Token._
 import net.maffoo.jsonquote.Util._
 import net.maffoo.jsonquote.literal.Json.quoteString
-import scala.reflect.macros.Context
 
 sealed trait Segment
 case class Chunk(s: String) extends Segment

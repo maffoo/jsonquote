@@ -4,7 +4,7 @@ import bintray.Plugin._
 import com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseKeys
 
 object BuildSettings {
-  val buildVersion = "0.1.6"
+  val buildVersion = "0.1.7"
   val buildScalaVersion = "2.11.1"
   val buildScalaOrganization = "org.scala-lang"
 
@@ -18,6 +18,9 @@ object BuildSettings {
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
     scalacOptions ++= Seq("-feature", "-deprecation"),
+    unmanagedSourceDirectories in Compile <+= (scalaBinaryVersion, sourceDirectory in Compile) { (v, dir) =>
+      dir / s"scala-$v"
+    },
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0" cross CrossVersion.full),
     EclipseKeys.eclipseOutput := Some(".eclipse-target")
   )
