@@ -1,6 +1,9 @@
 jsonquote
 =========
 
+[![Build Status](https://secure.travis-ci.org/maffoo/jsonquote.png)](http://travis-ci.org/maffoo/jsonquote)
+
+
 jsonquote is a little library that lets you build JSON in Scala using string interpolation.
 It uses macros to parse and validate your json at compile time, and to ensure that the values
 you are trying to interpolate are of the appropriate types for the places in the json where
