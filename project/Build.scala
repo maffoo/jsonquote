@@ -18,6 +18,9 @@ object BuildSettings {
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
     scalacOptions ++= Seq("-feature", "-deprecation"),
+    unmanagedSourceDirectories in Compile <+= (scalaBinaryVersion, sourceDirectory in Compile) { (v, dir) =>
+      dir / s"scala-$v"
+    },
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0" cross CrossVersion.full),
     libraryDependencies += "org.scalamacros" %% "quasiquotes" % "2.0.0",
     EclipseKeys.eclipseOutput := Some(".eclipse-target")
