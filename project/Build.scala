@@ -4,16 +4,13 @@ import bintray.Plugin._
 import com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseKeys
 
 object BuildSettings {
-  val buildVersion = "0.1.7"
-  val buildScalaVersion = "2.10.4"
-  val buildScalaOrganization = "org.scala-lang"
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
-    version := buildVersion,
+    version := "0.1.7",
     organization := "net.maffoo",
-    scalaVersion := buildScalaVersion,
-    crossScalaVersions := Seq(scalaVersion.value),
-    scalaOrganization := buildScalaOrganization,
+    scalaVersion := "2.10.4",
+    crossScalaVersions := Seq("2.10.4", "2.11.1"),
+    scalaOrganization := "org.scala-lang",
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
@@ -22,7 +19,12 @@ object BuildSettings {
       dir / s"scala-$v"
     },
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0" cross CrossVersion.full),
-    libraryDependencies += "org.scalamacros" %% "quasiquotes" % "2.0.0",
+    libraryDependencies ++= {
+      scalaBinaryVersion.value match {
+        case "2.10" => Seq("org.scalamacros" %% "quasiquotes" % "2.0.0")
+        case _ => Nil
+      }
+    },
     EclipseKeys.eclipseOutput := Some(".eclipse-target")
   )
 }
@@ -40,7 +42,7 @@ object MyBuild extends Build {
     settings = buildSettings ++ bintraySettings ++ Seq(
       libraryDependencies ++= Seq(
         scalaOrganization.value % "scala-reflect" % scalaVersion.value,
-        "org.scalatest" %% "scalatest" % "2.0" % "test"
+        "org.scalatest" %% "scalatest" % "2.2.0" % "test"
       )
     )
   )
@@ -49,7 +51,7 @@ object MyBuild extends Build {
     "jsonquote-lift",
     file("lift"),
     settings = buildSettings ++ bintraySettings ++ Seq(
-      libraryDependencies += "net.liftweb" %% "lift-json" % "2.5.1"
+      libraryDependencies += "net.liftweb" %% "lift-json" % "2.6-M4"
     )
   ) dependsOn(core % "compile->compile;test->test")
 
@@ -58,7 +60,7 @@ object MyBuild extends Build {
     file("play"),
     settings = buildSettings ++ bintraySettings ++ Seq(
       resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-      libraryDependencies += "com.typesafe.play" %% "play-json" % "2.2.1"
+      libraryDependencies += "com.typesafe.play" %% "play-json" % "2.3.1"
     )
   ) dependsOn(core % "compile->compile;test->test")
 
@@ -66,7 +68,8 @@ object MyBuild extends Build {
     "jsonquote-spray",
     file("spray"),
     settings = buildSettings ++ bintraySettings ++ Seq(
-      libraryDependencies += "io.spray" %% "spray-json" % "1.2.5"
+      resolvers += "Spray repository" at "http://repo.spray.io",
+      libraryDependencies += "io.spray" %% "spray-json" % "1.2.6"
     )
   ) dependsOn(core % "compile->compile;test->test")
 }
