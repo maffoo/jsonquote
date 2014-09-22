@@ -32,7 +32,13 @@ object BuildSettings {
 object MyBuild extends Build {
   import BuildSettings._
 
-  lazy val root = Project("jsonquote", file("."), settings = buildSettings).aggregate(
+  lazy val root = Project(
+    "jsonquote",
+    file("."),
+    settings = buildSettings ++ Seq(
+      publish := {}
+    )
+  ).aggregate(
     core, lift, play, spray
   )
 
