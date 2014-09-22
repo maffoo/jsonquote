@@ -69,7 +69,7 @@ object MyBuild extends Build {
     file("spray"),
     settings = buildSettings ++ bintraySettings ++ Seq(
       resolvers += "Spray repository" at "http://repo.spray.io",
-      libraryDependencies += "io.spray" %% "spray-json" % "1.2.6"
+      libraryDependencies += "io.spray" %% "spray-json" % "1.3.0"
     )
   ) dependsOn(core % "compile->compile;test->test")
 }
