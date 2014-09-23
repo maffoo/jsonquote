@@ -20,14 +20,14 @@ like to use:
 resolvers += "bintray-jcenter" at "http://jcenter.bintray.com/"
 
 // use the basic 'literal' json support built in to jsonquote
-libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.1.7"
+libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.2.1"
 
 // use one of the supported third-party json libraries
-libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.1.7"
+libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.2.1"
 
-libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.1.7"
+libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.2.1"
 
-libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.1.7"
+libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.2.1"
 
 ```
 
