@@ -1,8 +1,8 @@
 package net.maffoo.jsonquote
 
+import net.maffoo.jsonquote.Macros._
 import _root_.play.api.libs.json._
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
 
 package object play {
   /**
