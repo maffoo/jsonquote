@@ -101,6 +101,19 @@ class SprayTest extends FunSuite with Matchers {
     check(json"{a:? $vOpt}", """{"a": {"bar": "1", "baz": "2"}}""")
   }
 
+  test("can inject object entries without reordering fields") {
+    // With spray json's default ASTs, these may fail to compile,
+    // because iteration order is not preserved so the seq gets
+    // interpolated into the wrong slot.
+    val x = 1
+    val xs = Seq(1, 2)
+    json"{a: [..$xs], b: $x, c: $x, d: $x, e: $x}"
+    json"{a: [..$xs], b: $x, c: $x, d: $x, e: $x, f: $x}"
+    json"{a: [..$xs], b: $x, c: $x, d: $x, e: $x, f: $x, g: $x}"
+    json"{a: [..$xs], b: $x, c: $x, d: $x, e: $x, f: $x, g: $x, h: $x}"
+    json"{a: [..$xs], b: $x, c: $x, d: $x, e: $x, f: $x, g: $x, h: $x, i: $x}"
+  }
+
   test("can mix values, Iterables and Options in object") {
     val a = List("a" -> 10)
     val b = Some("b" -> 20)

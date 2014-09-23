@@ -1,10 +1,11 @@
 package net.maffoo.jsonquote.spray
 
 import net.maffoo.jsonquote.Parser
+import scala.collection.immutable.ListMap
 import _root_.spray.json._
 
 object Parse extends Parser[JsValue, (String, JsValue)] {
-  def makeObject(fields: Iterable[(String, JsValue)]): JsValue = JsObject(fields.toSeq: _*)
+  def makeObject(fields: Iterable[(String, JsValue)]): JsValue = JsObject(ListMap(fields.toSeq: _*)) // preserve iteration order until splicing is done
   def makeArray(elements: Iterable[JsValue]): JsValue = JsArray(elements.toSeq: _*)
   def makeNumber(n: BigDecimal): JsValue = JsNumber(n)
   def makeString(s: String): JsValue = JsString(s)
