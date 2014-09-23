@@ -34,23 +34,48 @@ package object spray {
       case SpliceValues() => c.abort(c.enclosingPosition, "cannot splice values at top level")
 
       case JsObject(members) =>
-        val ms = members.toSeq.map {
-          case SpliceField()      => q"$seq(${spliceField(args.next)})"
-          case SpliceFields()     => spliceFields(args.next)
-          case SpliceFieldNameOpt() => spliceFieldNameOpt(args.next, args.next)
-          case SpliceFieldName(v) => q"$seq((${spliceFieldName(args.next)}, ${splice(v)}))"
-          case SpliceFieldOpt(k)  => spliceFieldOpt(k, args.next)
-          case (k, v)             => q"$seq(($k, ${splice(v)}))"
+        val seqMembers = members.collect {
+          case SpliceFields()       =>
+          case SpliceFieldNameOpt() =>
+          case SpliceFieldOpt(k)    =>
         }
-        q"$jsObject($indexedSeq(..$ms).flatten: _*)"
+        if (seqMembers.isEmpty) {
+          val ms = members.toSeq.map {
+            case SpliceField()      => spliceField(args.next)
+            case SpliceFieldName(v) => q"(${spliceFieldName(args.next)}, ${splice(v)})"
+            case (k, v)             => q"($k, ${splice(v)})"
+          }
+          q"$jsObject(..$ms)"
+        } else {
+          val ms = members.toSeq.map {
+            case SpliceField()      => q"$seq(${spliceField(args.next)})"
+            case SpliceFields()     => spliceFields(args.next)
+            case SpliceFieldNameOpt() => spliceFieldNameOpt(args.next, args.next)
+            case SpliceFieldName(v) => q"$seq((${spliceFieldName(args.next)}, ${splice(v)}))"
+            case SpliceFieldOpt(k)  => spliceFieldOpt(k, args.next)
+            case (k, v)             => q"$seq(($k, ${splice(v)}))"
+          }
+          q"$jsObject($indexedSeq(..$ms).flatten: _*)"
+        }
 
       case JsArray(elements) =>
-        val es = elements.map {
-          case SpliceValue()  => q"$seq(${spliceValue(args.next)})"
-          case SpliceValues() => spliceValues(args.next)
-          case e              => q"$seq(${splice(e)})"
+        val seqElems = elements.collect {
+          case SpliceValues() =>
         }
-        q"$jsArray($indexedSeq(..$es).flatten: _*)"
+        if (seqElems.isEmpty) {
+          val es = elements.map {
+            case SpliceValue()  => spliceValue(args.next)
+            case e              => splice(e)
+          }
+          q"$jsArray(..$es)"
+        } else {
+          val es = elements.map {
+            case SpliceValue()  => q"$seq(${spliceValue(args.next)})"
+            case SpliceValues() => spliceValues(args.next)
+            case e              => q"$seq(${splice(e)})"
+          }
+          q"$jsArray($indexedSeq(..$es).flatten: _*)"
+        }
 
       case JsString(s)      => q"_root_.spray.json.JsString($s)"
       case JsNumber(n)      => q"_root_.spray.json.JsNumber($bigDecimal(${n.toString}))"

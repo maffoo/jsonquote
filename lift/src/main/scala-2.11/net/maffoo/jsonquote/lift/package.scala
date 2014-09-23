@@ -35,23 +35,48 @@ package object lift {
       case SpliceValues() => c.abort(c.enclosingPosition, "cannot splice values at top level")
 
       case JObject(members) =>
-        val ms = members.map {
-          case SpliceField()      => q"$seq(${spliceField(args.next)})"
-          case SpliceFields()     => spliceFields(args.next)
-          case SpliceFieldNameOpt() => spliceFieldNameOpt(args.next, args.next)
-          case SpliceFieldName(v) => q"$seq($jField(${spliceFieldName(args.next)}, ${splice(v)}))"
-          case SpliceFieldOpt(k)  => spliceFieldOpt(k, args.next)
-          case JField(k, v)       => q"$seq($jField($k, ${splice(v)}))"
+        val seqMembers = members.collect {
+          case SpliceFields()       =>
+          case SpliceFieldNameOpt() =>
+          case SpliceFieldOpt(k)    =>
         }
-        q"$jObject($list(..$ms).flatten)"
+        if (seqMembers.isEmpty) {
+          val ms = members.map {
+            case SpliceField()      => spliceField(args.next)
+            case SpliceFieldName(v) => q"$jField(${spliceFieldName(args.next)}, ${splice(v)})"
+            case JField(k, v)       => q"$jField($k, ${splice(v)})"
+          }
+          q"$jObject($list(..$ms))"
+        } else {
+          val ms = members.map {
+            case SpliceField()      => q"$seq(${spliceField(args.next)})"
+            case SpliceFields()     => spliceFields(args.next)
+            case SpliceFieldNameOpt() => spliceFieldNameOpt(args.next, args.next)
+            case SpliceFieldName(v) => q"$seq($jField(${spliceFieldName(args.next)}, ${splice(v)}))"
+            case SpliceFieldOpt(k)  => spliceFieldOpt(k, args.next)
+            case JField(k, v)       => q"$seq($jField($k, ${splice(v)}))"
+          }
+          q"$jObject($list(..$ms).flatten)"
+        }
 
       case JArray(elements) =>
-        val es = elements.map {
-          case SpliceValue()  => q"$seq(${spliceValue(args.next)})"
-          case SpliceValues() => spliceValues(args.next)
-          case e              => q"$seq(${splice(e)})"
+        val seqElems = elements.collect {
+          case SpliceValues() =>
         }
-        q"$jArray($list(..$es).flatten)"
+        if (seqElems.isEmpty) {
+          val es = elements.map {
+            case SpliceValue()  => spliceValue(args.next)
+            case e              => splice(e)
+          }
+          q"$jArray($list(..$es))"
+        } else {
+          val es = elements.map {
+            case SpliceValue()  => q"$seq(${spliceValue(args.next)})"
+            case SpliceValues() => spliceValues(args.next)
+            case e              => q"$seq(${splice(e)})"
+          }
+          q"$jArray($list(..$es).flatten)"
+        }
 
       case JString(s) => q"_root_.net.liftweb.json.JString($s)"
       case JDouble(n) => q"_root_.net.liftweb.json.JDouble($n)"
