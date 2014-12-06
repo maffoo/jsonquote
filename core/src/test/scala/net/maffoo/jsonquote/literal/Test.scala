@@ -90,10 +90,14 @@ class LiteralTest extends FunSuite with Matchers {
     val vOpt = Some(Json("1"))
     check(json"{a:? $vOpt}", """{"a": 1}""")
     check(json"{a:? $None}", """{}""")
+    check(json"{a:? $None, b: 1}", """{"b": 1}""")
+    check(json"{b: 1, a:? $None}", """{"b": 1}""")
 
     val k = "a"
     check(json"{$k:? $vOpt}", """{"a": 1}""")
     check(json"{$k:? $None}", """{}""")
+    check(json"{$k:? $None, b: 1}", """{"b": 1}""")
+    check(json"{b: 1, $k:? $None}", """{"b": 1}""")
   }
 
   test("can inject Option field values with implicit Writes") {
@@ -194,5 +198,11 @@ class LiteralTest extends FunSuite with Matchers {
       }""",
       """{"key":"value","key2":"value2"}"""
     )
+  }
+
+  test("coalescing strips leading, trailing and internal double commas") {
+    check(json"[..$Nil, 2]", "[2]")
+    check(json"[1, ..$Nil]", "[1]")
+    check(json"[1, ..$Nil, 2]", "[1,2]")
   }
 }

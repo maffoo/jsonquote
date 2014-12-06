@@ -20,25 +20,37 @@ object Parse {
   /**
    * Helper method used when splicing literal json strings.
    *
-   * This avoids the double-comma which would otherwise occur
-   * when we splice an empty Iterable or Option. For example:
+   * This avoids the extra commas which would otherwise occur
+   * when we splice an empty Iterable or Option. There are three
+   * cases to consider:
    *
    * val xs = Nil
-   * json"[ 1, ..$xs, 2 ]"
+   * json"[ ..$xs, 2 ]"   - leading comma
+   * json"[ 1, ..$xs, 2]" - double comma
+   * json"[ 1, ..$xs ]"   - trailing comma
    *
-   * Naively using the empty string for xs would give [1,,2].
-   * Hence, if while coalescing we encounter an empty string
-   * and the next character is a comma, we drop the comma.
+   * To handle the first case, we check when adding a segment
+   * beginning with a comma whether the last character was a
+   * list or object opener. If so, we drop the comma.
+   *
+   * To handle the latter two cases, we check when adding a
+   * segment whether the last character was a comma and the
+   * next character is a comma or object or list closer.
+   * If so, we drop the last comma added.
    */
   def coalesce(segments: String*): Json = {
     val it = segments.iterator
     val b = new StringBuilder
     while (it.hasNext) {
       val s = it.next
-      if (s.nonEmpty && ",]}".contains(s(0)) && b.last == ',') {
+      if (b.nonEmpty && "{[".contains(b.last) && s.nonEmpty && s(0) == ',') {
+        b.append(s.drop(1))
+      } else if (b.nonEmpty && b.last == ',' && s.nonEmpty && ",]}".contains(s(0))) {
         b.deleteCharAt(b.length - 1)
+        b.append(s)
+      } else {
+        b.append(s)
       }
-      b.append(s)
     }
     new Json(b.toString)
   }
