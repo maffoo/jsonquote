@@ -38,13 +38,17 @@ object Parse {
    * If so, we drop the last comma added.
    */
   def coalesce(segments: String*): Json = {
+    def isComma(c: Char) = c == ','
+    def isCommaOrCloser(c: Char) = ",]}" contains c
+    def isOpener(c: Char) = "{[" contains c
+
     val it = segments.iterator
     val b = new StringBuilder
     while (it.hasNext) {
       val s = it.next
-      if (b.nonEmpty && "{[".contains(b.last) && s.nonEmpty && s(0) == ',') {
+      if (b.nonEmpty && isOpener(b.last) && s.nonEmpty && isComma(s.head)) {
         b.append(s.drop(1))
-      } else if (b.nonEmpty && b.last == ',' && s.nonEmpty && ",]}".contains(s(0))) {
+      } else if (b.nonEmpty && isComma(b.last) && s.nonEmpty && isCommaOrCloser(s.head)) {
         b.deleteCharAt(b.length - 1)
         b.append(s)
       } else {
