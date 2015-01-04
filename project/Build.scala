@@ -18,10 +18,12 @@ object BuildSettings {
     unmanagedSourceDirectories in Compile <+= (scalaBinaryVersion, sourceDirectory in Compile) { (v, dir) =>
       dir / s"scala-$v"
     },
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0" cross CrossVersion.full),
     libraryDependencies ++= {
       scalaBinaryVersion.value match {
-        case "2.10" => Seq("org.scalamacros" %% "quasiquotes" % "2.0.0")
+        case "2.10" => Seq(
+          "org.scalamacros" %% "quasiquotes" % "2.0.0",
+          compilerPlugin("org.scalamacros" % "paradise" % "2.0.0" cross CrossVersion.full)
+        )
         case _ => Nil
       }
     },
