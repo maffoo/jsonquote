@@ -8,8 +8,8 @@ object BuildSettings {
   val buildSettings = Defaults.defaultSettings ++ Seq(
     version := "0.2.2",
     organization := "net.maffoo",
-    scalaVersion := "2.10.4",
-    crossScalaVersions := Seq("2.10.4", "2.11.1"),
+    scalaVersion := "2.11.4",
+    crossScalaVersions := Seq("2.10.4", "2.11.4"),
     scalaOrganization := "org.scala-lang",
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     resolvers += Resolver.sonatypeRepo("snapshots"),
