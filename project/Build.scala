@@ -59,7 +59,7 @@ object MyBuild extends Build {
     "jsonquote-lift",
     file("lift"),
     settings = buildSettings ++ bintraySettings ++ Seq(
-      libraryDependencies += "net.liftweb" %% "lift-json" % "2.6-M4"
+      libraryDependencies += "net.liftweb" %% "lift-json" % "2.6.2"
     )
   ) dependsOn(core % "compile->compile;test->test")
 
