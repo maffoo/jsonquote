@@ -6,7 +6,7 @@ import com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseKeys
 object BuildSettings {
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
-    version := "0.2.2",
+    version := "0.3.0",
     organization := "net.maffoo",
     scalaVersion := "2.11.4",
     crossScalaVersions := Seq("2.10.4", "2.11.4"),
