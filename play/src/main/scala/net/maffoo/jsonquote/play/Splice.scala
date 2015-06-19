@@ -1,29 +1,48 @@
 package net.maffoo.jsonquote.play
 
 import _root_.play.api.libs.json._
+import scala.util.Random
 
 // Sentinel values to mark splice points in the json AST.
-// When pattern matching to detect these, we use reference equality instead
-// of value equality, because we want to treat them specially even though
-// they may be valid values.
+// Because play uses Map to represent json objects, we use unique
+// random keys beginning with a known prefix to mark field splice points.
 
 class Sentinel[A <: AnyRef](inst: A) {
   def apply(): A = inst
   def unapply(a: A): Boolean = a eq inst
 }
 
-object SpliceValue  extends Sentinel[JsValue](new JsObject(Nil))
-object SpliceValues extends Sentinel[JsValue](new JsObject(Nil))
+object SpliceValue  extends Sentinel[JsValue](JsObject(Map("__splice_value__" -> JsNull)))
+object SpliceValues extends Sentinel[JsValue](JsObject(Map("__splice_values__" -> JsNull)))
 
-object SpliceField  extends Sentinel[(String, JsValue)](("", new JsObject(Nil)))
-object SpliceFields extends Sentinel[(String, JsValue)](("", new JsObject(Nil)))
+object SpliceField {
+  def apply(): (String, JsValue) = ("__splice_field__%016X".format(Random.nextLong), JsNull)
+  def unapply(a: (String, JsValue)): Boolean = a match {
+    case (f, JsNull) if f.startsWith("__splice_field__") => true
+    case _ => false
+  }
+}
 
-object SpliceFieldNameOpt extends Sentinel[(String, JsValue)](("", new JsObject(Nil)))
+object SpliceFields {
+  def apply(): (String, JsValue) = ("__splice_fields__%016X".format(Random.nextLong), JsNull)
+  def unapply(a: (String, JsValue)): Boolean = a match {
+    case (f, JsNull) if f.startsWith("__splice_fields__") => true
+    case _ => false
+  }
+}
+
+object SpliceFieldNameOpt {
+  def apply(): (String, JsValue) = ("__splice_field_name_opt__%016X".format(Random.nextLong), JsNull)
+  def unapply(f: (String, JsValue)): Boolean = f match {
+    case (f, JsNull) if f.startsWith("__splice_field_name_opt__") => true
+    case _ => false
+  }
+}
 
 object SpliceFieldName {
-  def apply(x: JsValue) = (null, x)
+  def apply(x: JsValue) = ("__splice_field_name__%016X".format(Random.nextLong), x)
   def unapply(f: (String, JsValue)): Option[JsValue] = f match {
-    case (null, x) => Some(x)
+    case (f, x) if f.startsWith("__splice_field_name__") => Some(x)
     case _ => None
   }
 }

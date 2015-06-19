@@ -104,8 +104,8 @@ class PlayTest extends FunSuite with Matchers {
     val c = Nil
     val d = None
     check(
-      json"""{i:1, ..$a, i:2, ..$b, i:3, ..$c, i:4, ..$d, i:5}""",
-      """{"i":1, "a":10, "i":2, "b":20, "i":3, "i":4, "i":5}"""
+      json"""{i:1, ..$a, j:2, ..$b, k:3, ..$c, l:4, ..$d, m:5}""",
+      """{"i":1, "a":10, "j":2, "b":20, "k":3, "l":4, "m":5}"""
     )
   }
 

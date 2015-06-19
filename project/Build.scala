@@ -68,7 +68,7 @@ object MyBuild extends Build {
     file("play"),
     settings = buildSettings ++ bintraySettings ++ Seq(
       resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-      libraryDependencies += "com.typesafe.play" %% "play-json" % "2.3.1"
+      libraryDependencies += "com.typesafe.play" %% "play-json" % "2.4.0"
     )
   ) dependsOn(core % "compile->compile;test->test")
 
