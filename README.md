@@ -17,17 +17,19 @@ jsonquote is built for scala 2.10 and 2.11, and published on bintray. To include
 project, simply add the desired artifact as a maven dependency for the json library you would
 like to use:
 ```scala
-resolvers += "bintray-jcenter" at "http://jcenter.bintray.com/"
+resolvers += Resolver.jcenterRepo
 
 // use the basic 'literal' json support built in to jsonquote
-libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.2.1"
+libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.4.0"
 
 // use one of the supported third-party json libraries
-libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.2.1"
+libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.4.0"
 
-libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.2.1"
+// note that for Scala 2.11 version 0.4.0 and above depends on play-json 2.5.X
+// older versions, as well as the artifacts published for Scala 2.10, depend on 2.4.X
+libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.4.0"
 
-libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.2.1"
+libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.4.0"
 
 ```
 
