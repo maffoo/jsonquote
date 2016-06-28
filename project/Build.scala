@@ -6,10 +6,10 @@ import com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseKeys
 object BuildSettings {
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
-    version := "0.3.0",
+    version := "0.4.0",
     organization := "net.maffoo",
-    scalaVersion := "2.11.4",
-    crossScalaVersions := Seq("2.10.4", "2.11.4"),
+    scalaVersion := "2.11.8",
+    crossScalaVersions := Seq("2.10.6", "2.11.8"),
     scalaOrganization := "org.scala-lang",
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     resolvers += Resolver.sonatypeRepo("snapshots"),
@@ -21,8 +21,8 @@ object BuildSettings {
     libraryDependencies ++= {
       scalaBinaryVersion.value match {
         case "2.10" => Seq(
-          "org.scalamacros" %% "quasiquotes" % "2.0.0",
-          compilerPlugin("org.scalamacros" % "paradise" % "2.0.0" cross CrossVersion.full)
+          "org.scalamacros" %% "quasiquotes" % "2.1.0",
+          compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
         )
         case _ => Nil
       }
@@ -68,7 +68,10 @@ object MyBuild extends Build {
     file("play"),
     settings = buildSettings ++ bintraySettings ++ Seq(
       resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-      libraryDependencies += "com.typesafe.play" %% "play-json" % "2.4.0"
+      libraryDependencies += (scalaBinaryVersion.value match {
+        case "2.10" => "com.typesafe.play" %% "play-json" % "2.4.8"
+        case _      => "com.typesafe.play" %% "play-json" % "2.5.4"
+      })
     )
   ) dependsOn(core % "compile->compile;test->test")
 
