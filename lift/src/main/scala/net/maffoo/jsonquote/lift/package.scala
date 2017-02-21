@@ -9,7 +9,7 @@ package object lift {
    * Rendering JValue produces valid json literal
    */
   implicit class LiftToLiteralJson(val json: JValue) extends AnyVal {
-    def toLiteral: literal.Json = new literal.Json(compact(render(json)))
+    def toLiteral: literal.Json = new literal.Json(Compat.compactRender(json))
   }
 
   implicit class RichJsonSringContext(val sc: StringContext) extends AnyVal {

@@ -1,6 +1,8 @@
 *.class
 *.log
 .cache
+.cache-main
+.cache-tests
 .classpath
 .eclipse-target
 .project

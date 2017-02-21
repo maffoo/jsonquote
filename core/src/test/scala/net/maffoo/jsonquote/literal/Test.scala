@@ -1,7 +1,7 @@
 package net.maffoo.jsonquote.literal
 
 import org.scalatest.{FunSuite, Matchers}
-import scala.io.Source
+import scala.io.{Codec, Source}
 
 case class Foo(bar: String, baz: String)
 
@@ -174,6 +174,7 @@ class LiteralTest extends FunSuite with Matchers {
   }
 
   test("json parser can handle crazy javascript") {
+    implicit val codec = Codec.UTF8
     val source = Source.fromURL(getClass.getResource("/sample.json"))
     Json(source.getLines.mkString)
   }
