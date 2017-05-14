@@ -1,6 +1,6 @@
 import sbt._
 import sbt.Keys._
-import bintray.Plugin._
+import bintray.BintrayPlugin._
 import com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseKeys
 
 object BuildSettings {
