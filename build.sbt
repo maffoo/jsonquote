@@ -64,7 +64,7 @@ lazy val play = project.in(file("play"))
     libraryDependencies += (scalaBinaryVersion.value match {
       case "2.10" => "com.typesafe.play" %% "play-json" % "2.4.8"
       case "2.11" => "com.typesafe.play" %% "play-json" % "2.5.4"
-      case _      => "com.typesafe.play" %% "play-json" % "2.6.0-M3"
+      case _      => "com.typesafe.play" %% "play-json" % "2.6.2"
     })
   )
 
