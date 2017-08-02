@@ -27,7 +27,7 @@ val commonSettings = Seq(
 )
 
 lazy val root = project.in(file("."))
-  .aggregate(core, lift, play, spray)
+  .aggregate(core, json4s, lift, play, spray)
   .settings(
     commonSettings,
     name := "jsonquote",
@@ -42,6 +42,14 @@ lazy val core = project.in(file("core"))
       scalaOrganization.value % "scala-reflect" % scalaVersion.value,
       "org.scalatest" %% "scalatest" % "3.0.1" % "test"
     )
+  )
+
+lazy val json4s = project.in(file("json4s"))
+  .dependsOn(core % "compile->compile;test->test")
+  .settings(
+    commonSettings,
+    name := "jsonquote-json4s",
+    libraryDependencies += "org.json4s" %% "json4s-native" % "3.5.3"
   )
 
 lazy val lift = project.in(file("lift"))
