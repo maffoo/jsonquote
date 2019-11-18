@@ -1,20 +1,39 @@
-*.class
-*.log
-.cache
-.cache-main
-.cache-tests
+# sbt
+lib_managed
+project/project
+target
+
+# Worksheets (Eclipse or IntelliJ)
+*.sc
+
+# Eclipse
+.cache*
 .classpath
-.eclipse-target
 .project
-.settings/
-
-# sbt specific
-dist/*
-target/
-lib_managed/
-src_managed/
-project/boot/
-project/plugins/project/
-
-# Scala-IDE specific
 .scala_dependencies
+.settings
+.target
+.worksheet
+
+# IntelliJ
+.idea
+
+# ENSIME
+.ensime
+.ensime_lucene
+.ensime_cache
+
+# Mac
+.DS_Store
+
+# Akka
+ddata*
+journal
+snapshots
+
+# Log files
+*.log
+bad.txt
+good.txt
+badurl.txt
+urlImport.csv

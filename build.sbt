@@ -1,8 +1,8 @@
 val commonSettings = Seq(
   version := "0.5.1",
   organization := "net.maffoo",
-  scalaVersion := "2.12.1",
-  crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1"),
+  scalaVersion := "2.13.1",
+  crossScalaVersions := Seq("2.12.10", "2.13.1"),
   scalaOrganization := "org.scala-lang",
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
   resolvers += Resolver.sonatypeRepo("snapshots"),
@@ -13,16 +13,6 @@ val commonSettings = Seq(
     val version = scalaBinaryVersion.value
     dir / s"scala-$version"
   },
-  libraryDependencies ++= {
-    scalaBinaryVersion.value match {
-      case "2.10" => Seq(
-        "org.scalamacros" %% "quasiquotes" % "2.1.0",
-        compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
-      )
-      case _ => Nil
-    }
-  },
-  EclipseKeys.eclipseOutput := Some(".eclipse-target"),
   bintrayOrganization := Some("maffoo")
 )
 
@@ -40,7 +30,7 @@ lazy val core = project.in(file("core"))
     name := "jsonquote-core",
     libraryDependencies ++= Seq(
       scalaOrganization.value % "scala-reflect" % scalaVersion.value,
-      "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+      "org.scalatest" %% "scalatest" % "3.0.8" % "test"
     )
   )
 
@@ -49,7 +39,7 @@ lazy val json4s = project.in(file("json4s"))
   .settings(
     commonSettings,
     name := "jsonquote-json4s",
-    libraryDependencies += "org.json4s" %% "json4s-native" % "3.5.3"
+    libraryDependencies += "org.json4s" %% "json4s-native" % "3.6.7"
   )
 
 lazy val lift = project.in(file("lift"))
@@ -57,10 +47,7 @@ lazy val lift = project.in(file("lift"))
   .settings(
     commonSettings,
     name := "jsonquote-lift",
-    libraryDependencies += (scalaBinaryVersion.value match {
-      case "2.10" => "net.liftweb" %% "lift-json" % "2.6.3"
-      case _ => "net.liftweb" %% "lift-json" % "3.0.1"
-    })
+    libraryDependencies += ("net.liftweb" %% "lift-json" % "3.4.0")
   )
 
 lazy val play = project.in(file("play"))
@@ -69,11 +56,7 @@ lazy val play = project.in(file("play"))
     commonSettings,
     name := "jsonquote-play",
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-    libraryDependencies += (scalaBinaryVersion.value match {
-      case "2.10" => "com.typesafe.play" %% "play-json" % "2.4.8"
-      case "2.11" => "com.typesafe.play" %% "play-json" % "2.5.4"
-      case _      => "com.typesafe.play" %% "play-json" % "2.6.2"
-    })
+    libraryDependencies += ("com.typesafe.play" %% "play-json" % "2.7.4")
   )
 
 lazy val spray = project.in(file("spray"))
@@ -82,5 +65,5 @@ lazy val spray = project.in(file("spray"))
     commonSettings,
     name := "jsonquote-spray",
     resolvers += "Spray repository" at "http://repo.spray.io",
-    libraryDependencies += "io.spray" %% "spray-json" % "1.3.3"
+    libraryDependencies += "io.spray" %% "spray-json" % "1.3.5"
   )
