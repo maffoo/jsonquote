@@ -15,7 +15,7 @@ object Json {
   /**
    * Quote strings for inclusion as JSON strings.
    */
-  def quoteString (s : String) : String = s.flatMap {
+  def quoteString (s : String) : String = "\"" + s.flatMap {
     case '"'  => """\""""
     case '\\' => """\\"""
     case '/'  => """\/"""
@@ -26,5 +26,5 @@ object Json {
     case '\t' => """\t"""
     case c if c.isControl => f"\\u$c%04x"
     case c => c.toString
-  }
+  } + "\""
 }
