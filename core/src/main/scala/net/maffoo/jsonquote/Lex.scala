@@ -1,5 +1,7 @@
 package net.maffoo.jsonquote
 
+import scala.collection.BufferedIterator
+
 sealed trait Token
 object Token {
   abstract class Literal(val value: String) extends Token {
@@ -129,12 +131,14 @@ object Lex {
     b ++= lexInt
     acceptOpt(".").foreach { c =>
       b += c
-      b ++= accept(DIGIT) + acceptRun(DIGIT)
+      b += accept(DIGIT)
+      b ++= acceptRun(DIGIT)
     }
     acceptOpt("eE").foreach { c =>
       b += c
       b ++= acceptOpt("+-")
-      b ++= accept(DIGIT) + acceptRun(DIGIT)
+      b += accept(DIGIT)
+      b ++= acceptRun(DIGIT)
     }
     NUMBER(BigDecimal(b.toString))
   }
@@ -143,7 +147,7 @@ object Lex {
     it.head._1 match {
       case '0' => it.next()._1.toString
       case '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
-        it.next()._1 + acceptRun(DIGIT)
+        it.next()._1 +: acceptRun(DIGIT)
     }
   }
 

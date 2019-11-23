@@ -1,5 +1,7 @@
 package net.maffoo.jsonquote
 
+import scala.collection.BufferedIterator
+
 trait Parser[V, F] {
   import Token._
   import Util._

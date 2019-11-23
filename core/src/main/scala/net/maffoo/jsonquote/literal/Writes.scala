@@ -40,7 +40,7 @@ object Writes {
   }
 
   implicit object StringWrites extends Writes[String] {
-    def write(s: String): Json = new Json('"' + quoteString(s) + '"')
+    def write(s: String): Json = new Json(quoteString(s))
   }
 
 //  implicit def optionWrites[A: Writes]: Writes[Option[A]] = new Writes[Option[A]] {
@@ -61,7 +61,7 @@ object Writes {
     def write(m: Map[String, A]): Json = {
       val keyWriter = StringWrites
       val valWriter = implicitly[Writes[A]]
-      new Json(m.map { case (k, v) => keyWriter.write(k) + ":" + valWriter.write(v) }.mkString("{", ",", "}"))
+      new Json(m.map { case (k, v) => s"${keyWriter.write(k)}:${valWriter.write(v)}" }.mkString("{", ",", "}"))
     }
   }
 }

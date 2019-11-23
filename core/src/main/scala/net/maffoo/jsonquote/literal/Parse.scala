@@ -1,5 +1,7 @@
 package net.maffoo.jsonquote.literal
 
+import scala.collection.BufferedIterator
+
 import net.maffoo.jsonquote._
 import net.maffoo.jsonquote.Token._
 import net.maffoo.jsonquote.Util._
@@ -85,7 +87,7 @@ object Parse {
       case OBJECT_START => parseObject
       case ARRAY_START  => parseArray
       case NUMBER(n)    => it.next(); Iterator(Chunk(n.toString))
-      case STRING(s)    => it.next(); Iterator(Chunk('"' + quoteString(s) + '"'))
+      case STRING(s)    => it.next(); Iterator(Chunk(quoteString(s)))
       case TRUE         => it.next(); Iterator(Chunk("true"))
       case FALSE        => it.next(); Iterator(Chunk("false"))
       case NULL         => it.next(); Iterator(Chunk("null"))
@@ -159,7 +161,7 @@ object Parse {
             expect[Token](SPLICE)
             Iterator(SpliceFieldOpt(k))
 
-          case _ => Iterator(Chunk('"' + quoteString(k) + '"'), Chunk(":")) ++ parseValue
+          case _ => Iterator(Chunk(quoteString(k)), Chunk(":")) ++ parseValue
         }
 
       case IDENT(k) =>
@@ -170,7 +172,7 @@ object Parse {
             expect[Token](SPLICE)
             Iterator(SpliceFieldOpt(k))
 
-          case _ => Iterator(Chunk('"' + quoteString(k) + '"'), Chunk(":")) ++ parseValue
+          case _ => Iterator(Chunk(quoteString(k)), Chunk(":")) ++ parseValue
         }
 
       case SPLICE =>

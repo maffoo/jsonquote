@@ -56,11 +56,11 @@ package object literal {
 
     def spliceField(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[(String, Json)] =>
-        q"""val (k, v) = $e; $strWriter.write(k) + ":" + v"""
+        q"""val (k, v) = $e; $strWriter.write(k).toString + ":" + v"""
       case t if t <:< c.typeOf[(String, Any)] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[(String, Nothing)] :: Nil))(1)
         val writer = inferWriter(e, valueTpe)
-        q"""val (k, v) = $e; $strWriter.write(k) + ":" + $writer.write(v)"""
+        q"""val (k, v) = $e; $strWriter.write(k).toString + ":" + $writer.write(v).toString"""
 
       case t => c.abort(e.pos, s"required Iterable[(String, _)] but got $t")
     }
@@ -68,19 +68,19 @@ package object literal {
     def spliceFields(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[Nil.type] => Literal(Constant(""))
       case t if t <:< c.typeOf[Iterable[(String, Json)]] =>
-        q"""$e.map { case (k, v) => $strWriter.write(k) + ":" + v }.mkString(",")"""
+        q"""$e.map { case (k, v) => $strWriter.write(k).toString + ":" + v.toString }.mkString(",")"""
       case t if t <:< c.typeOf[Iterable[(String, Any)]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Iterable[(String, Nothing)]] :: Nil))(2)
         val writer = inferWriter(e, valueTpe)
-        q"""$e.map { case (k, v) => $strWriter.write(k) + ":" + $writer.write(v) }.mkString(",")"""
+        q"""$e.map { case (k, v) => $strWriter.write(k).toString + ":" + $writer.write(v).toString }.mkString(",")"""
 
       case t if t <:< c.typeOf[None.type] => Literal(Constant(""))
       case t if t <:< c.typeOf[Option[(String, Json)]] =>
-        q"""$e.map { case (k, v) => $strWriter.write(k) + ":" + v }.getOrElse("")"""
+        q"""$e.map { case (k, v) => $strWriter.write(k).toString + ":" + v.toString }.getOrElse("")"""
       case t if t <:< c.typeOf[Option[(String, Any)]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[(String, Nothing)]] :: Nil))(2)
         val writer = inferWriter(e, valueTpe)
-        q"""$e.map { case (k, v) => $strWriter.write(k) + ":" + $writer.write(v) }.getOrElse("")"""
+        q"""$e.map { case (k, v) => $strWriter.write(k).toString + ":" + $writer.write(v).toString }.getOrElse("")"""
 
       case t => c.abort(e.pos, s"required Iterable[(String, _)] but got $t")
     }
@@ -88,11 +88,11 @@ package object literal {
     def spliceFieldOpt(k: String, e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[None.type] => Literal(Constant(""))
       case t if t <:< c.typeOf[Option[Json]] =>
-        q"""$e.map { v => $strWriter.write($k) + ":" + v }.getOrElse("")"""
+        q"""$e.map { v => $strWriter.write($k).toString + ":" + v.toString }.getOrElse("")"""
       case t if t <:< c.typeOf[Option[Any]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
         val writer = inferWriter(e, valueTpe)
-        q"""$e.map { v => $strWriter.write($k) + ":" + $writer.write(v) }.getOrElse("")"""
+        q"""$e.map { v => $strWriter.write($k).toString + ":" + $writer.write(v).toString }.getOrElse("")"""
 
       case t => c.abort(e.pos, s"required Option[_] but got $t")
     }
@@ -105,11 +105,11 @@ package object literal {
       v.tpe match {
         case t if t <:< c.typeOf[None.type] => Literal(Constant(""))
         case t if t <:< c.typeOf[Option[Json]] =>
-          q"""$v.map { v => $strWriter.write($k) + ":" + v }.getOrElse("")"""
+          q"""$v.map { v => $strWriter.write($k).toString + ":" + v.toString }.getOrElse("")"""
         case t if t <:< c.typeOf[Option[Any]] =>
           val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
           val writer = inferWriter(v, valueTpe)
-          q"""$v.map { v => $strWriter.write($k) + ":" + $writer.write(v) }.getOrElse("")"""
+          q"""$v.map { v => $strWriter.write($k).toString + ":" + $writer.write(v).toString }.getOrElse("")"""
 
         case t => c.abort(v.pos, s"required Option[_] but got $t")
       }
