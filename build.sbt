@@ -13,7 +13,6 @@ val commonSettings = Seq(
     val version = scalaBinaryVersion.value
     dir / s"scala-$version"
   },
-  EclipseKeys.eclipseOutput := Some(".eclipse-target"),
   bintrayOrganization := Some("maffoo")
 )
 
@@ -56,7 +55,6 @@ lazy val play = project.in(file("play"))
   .settings(
     commonSettings,
     name := "jsonquote-play",
-    resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
     libraryDependencies += (scalaBinaryVersion.value match {
       case "2.11" => "com.typesafe.play" %% "play-json" % "2.7.4"
       case _      => "com.typesafe.play" %% "play-json" % "2.8.0"
@@ -68,6 +66,5 @@ lazy val spray = project.in(file("spray"))
   .settings(
     commonSettings,
     name := "jsonquote-spray",
-    resolvers += "Spray repository" at "http://repo.spray.io",
     libraryDependencies += "io.spray" %% "spray-json" % "1.3.5"
   )
