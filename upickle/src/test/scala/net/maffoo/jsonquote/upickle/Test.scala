@@ -3,33 +3,15 @@ package net.maffoo.jsonquote.upickle
 import org.scalatest.{FunSuite, Matchers}
 import ujson.{Arr, Null, Num, Obj, Str, Value}
 import upickle.default
+import upickle.default._
 import upickle.default.macroRW
 
 case class Foo(bar: String, baz: String)
 
-object OptionPickler extends upickle.AttributeTagged {
-  override implicit def OptionWriter[T: Writer]: Writer[Option[T]] = {
-    implicitly[Writer[T]].comap[Option[T]] {
-      case None => null.asInstanceOf[T]
-      case Some(x) => x
-    }
-  }
-
-  override implicit def OptionReader[T: Reader]: Reader[Option[T]] = {
-    new Reader.Delegate[Any, Option[T]](implicitly[Reader[T]].map(Some(_))){
-      override def visitNull(index: Int) = None
-    }
-  }
-}
-
 class UpickleTest extends FunSuite with Matchers {
 //  import _root_.upickle.default.{macroRW}
 
-  import OptionPickler._
-  import OptionPickler.macroRW
-
-  implicit val FooRW: OptionPickler.ReadWriter[Foo] = macroRW
-
+  implicit val FooRW: default.ReadWriter[Foo] = macroRW
 
   implicit def Foo2Json(foo: Foo): Value = read[Value](write(foo))
 
