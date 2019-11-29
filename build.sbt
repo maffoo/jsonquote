@@ -1,3 +1,5 @@
+import sbt.Keys.libraryDependencies
+
 val commonSettings = Seq(
   version := "0.6.0",
   organization := "net.maffoo",
@@ -17,7 +19,7 @@ val commonSettings = Seq(
 )
 
 lazy val root = project.in(file("."))
-  .aggregate(core, json4s, lift, play, spray)
+  .aggregate(core, json4s, lift, play, spray, upickle)
   .settings(
     commonSettings,
     name := "jsonquote",
@@ -67,4 +69,13 @@ lazy val spray = project.in(file("spray"))
     commonSettings,
     name := "jsonquote-spray",
     libraryDependencies += "io.spray" %% "spray-json" % "1.3.5"
+  )
+
+lazy val upickle = project.in(file("upickle"))
+  .dependsOn(core % "compile->compile;test->test")
+  .settings(
+    commonSettings,
+    name := "jsonquote-upickle",
+    libraryDependencies += "com.lihaoyi" %% "upickle-core" % "0.8.0",
+    libraryDependencies += "com.lihaoyi" %% "upickle" % "0.8.0"
   )
