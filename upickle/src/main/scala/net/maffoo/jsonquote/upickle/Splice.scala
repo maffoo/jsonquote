@@ -5,7 +5,7 @@ import ujson._
 import scala.util.Random
 
 // Sentinel values to mark splice points in the json AST.
-// Because spray uses Map to represent json objects, we use unique
+// Because ujson uses Map to represent json objects, we use unique
 // random keys beginning with a known prefix to mark field splice points.
 
 class Sentinel[A <: AnyRef](inst: A) {
@@ -13,8 +13,8 @@ class Sentinel[A <: AnyRef](inst: A) {
   def unapply(a: A): Boolean = a == inst
 }
 
-object SpliceValue  extends Sentinel[Value](Obj.from(Map("__splice_value__" -> Null)))
-object SpliceValues extends Sentinel[Value](Obj.from(Map("__splice_values__" -> Null)))
+object SpliceValue  extends Sentinel[Value](Obj("__splice_value__" -> Null))
+object SpliceValues extends Sentinel[Value](Obj("__splice_values__" -> Null))
 
 object SpliceField {
   def apply(): (String, Value) = ("__splice_field__%016X".format(Random.nextLong), Null)

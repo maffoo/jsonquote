@@ -26,10 +26,10 @@ package object upickle {
     // fully-qualified symbols and types (for hygiene)
     val nil = q"_root_.scala.collection.immutable.Nil"
     val seq = q"_root_.scala.Seq"
-    val indexedSeq = q"_root_.scala.IndexedSeq"
+    val iterable = q"_root_.scala.Iterable"
     val jsArray = q"_root_.ujson.Arr"
     val jsObject = q"_root_.ujson.Obj"
-    val writerT = tq"_root_.upickle.default.Writer"
+    val writeJs = q"_root_.upickle.default.writeJs"
 
     // convert the given json AST to a tree with arguments spliced in at the correct locations
     def splice(js: Value)(implicit args: Iterator[Tree]): Tree = js match {
@@ -58,7 +58,7 @@ package object upickle {
             case SpliceFieldOpt(k)  => spliceFieldOpt(k, args.next)
             case (k, v)             => q"$seq(($k, ${splice(v)}))"
           }
-          q"$jsObject.from($indexedSeq(..$ms).flatten)"
+          q"$jsObject.from($iterable(..$ms).flatten)"
         }
 
       case Arr(elements) =>
@@ -77,7 +77,7 @@ package object upickle {
             case SpliceValues() => spliceValues(args.next)
             case e              => q"$seq(${splice(e)})"
           }
-          q"$jsArray($indexedSeq(..$es).flatten)"
+          q"$jsArray.from($iterable(..$es).flatten)"
         }
 
       case Str(s)      => q"_root_.ujson.Str($s)"
@@ -90,8 +90,8 @@ package object upickle {
     def spliceValue(e: Tree): Tree = e.tpe match {
       case t if t <:< c.typeOf[Value] => e
       case t =>
-        inferWriter(e, t)
-        q"implicitly[$writerT[$t]].write($e)"
+        val writer = inferWriter(e, t)
+        q"$writeJs($e)($writer)"
     }
 
     def spliceValues(e: Tree): Tree = e.tpe match {
@@ -99,14 +99,14 @@ package object upickle {
       case t if t <:< c.typeOf[Iterable[Any]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Iterable[Nothing]] :: Nil))(0)
         val writer = inferWriter(e, valueTpe)
-        q"$e.map($writer.write)"
+        q"$e.map(v => $writeJs(v)($writer))"
 
       case t if t <:< c.typeOf[None.type] => nil
       case t if t <:< c.typeOf[Option[Value]] => e
       case t if t <:< c.typeOf[Option[Any]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
         val writer = inferWriter(e, valueTpe)
-        q"$e.toIterable.map($writer.write)"
+        q"$e.toIterable.map(v => $writeJs(v)($writer))"
 
       case t => c.abort(e.pos, s"required Iterable[_] but got $t")
     }
@@ -116,7 +116,7 @@ package object upickle {
       case t if t <:< c.typeOf[(String, Any)] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[(String, Nothing)] :: Nil))(1)
         val writer = inferWriter(e, valueTpe)
-        q"val (k, v) = $e; (k, $writer.write(v))"
+        q"val (k, v) = $e; (k, $writeJs(v)($writer))"
 
       case t => c.abort(e.pos, s"required (String, _) but got $t")
     }
@@ -126,14 +126,14 @@ package object upickle {
       case t if t <:< c.typeOf[Iterable[(String, Any)]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Iterable[(String, Nothing)]] :: Nil))(2)
         val writer = inferWriter(e, valueTpe)
-        q"$e.map { case (k, v) => (k, $writer.write(v)) }"
+        q"$e.map { case (k, v) => (k, $writeJs(v)($writer)) }"
 
       case t if t <:< c.typeOf[None.type] => nil
       case t if t <:< c.typeOf[Option[(String, Value)]] => e
       case t if t <:< c.typeOf[Option[(String, Any)]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[(String, Nothing)]] :: Nil))(2)
         val writer = inferWriter(e, valueTpe)
-        q"$e.toIterable.map { case (k, v) => (k, $writer.write(v)) }"
+        q"$e.toIterable.map { case (k, v) => (k, $writeJs(v)($writer)) }"
 
       case t => c.abort(e.pos, s"required Iterable[(String, _)] but got $t")
     }
@@ -144,7 +144,7 @@ package object upickle {
       case t if t <:< c.typeOf[Option[Any]] =>
         val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
         val writer = inferWriter(e, valueTpe)
-        q"$e.toIterable.map { v => ($k, $writer.write(v)) }"
+        q"$e.toIterable.map { v => ($k, $writeJs(v)($writer)) }"
 
       case t => c.abort(e.pos, s"required Option[_] but got $t")
     }
@@ -165,7 +165,7 @@ package object upickle {
         case t if t <:< c.typeOf[Option[Any]] =>
           val valueTpe = typeParams(lub(t :: c.typeOf[Option[Nothing]] :: Nil))(0)
           val writer = inferWriter(v, valueTpe)
-          q"$v.toIterable.map { v => ($k, $writer.write(v)) }"
+          q"$v.toIterable.map { v => ($k, $writeJs(v)($writer)) }"
 
         case t => c.abort(v.pos, s"required Option[_] but got $t")
       }

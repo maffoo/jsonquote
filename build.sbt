@@ -1,5 +1,3 @@
-import sbt.Keys.libraryDependencies
-
 val commonSettings = Seq(
   version := "0.6.0",
   organization := "net.maffoo",
@@ -76,6 +74,14 @@ lazy val upickle = project.in(file("upickle"))
   .settings(
     commonSettings,
     name := "jsonquote-upickle",
-    libraryDependencies += "com.lihaoyi" %% "upickle-core" % "0.8.0",
-    libraryDependencies += "com.lihaoyi" %% "upickle" % "0.8.0"
+    libraryDependencies ++= {
+      val upickleVersion = scalaBinaryVersion.value match {
+        case "2.11" => "0.7.4"
+        case _ => "0.8.0"
+      }
+      Seq(
+        "com.lihaoyi" %% "upickle-core" % upickleVersion,
+        "com.lihaoyi" %% "upickle" % upickleVersion
+      )
+    }
   )
