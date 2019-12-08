@@ -17,7 +17,7 @@ val commonSettings = Seq(
 )
 
 lazy val root = project.in(file("."))
-  .aggregate(core, json4s, lift, play, spray)
+  .aggregate(core, json4s, lift, play, spray, upickle)
   .settings(
     commonSettings,
     name := "jsonquote",
@@ -67,4 +67,21 @@ lazy val spray = project.in(file("spray"))
     commonSettings,
     name := "jsonquote-spray",
     libraryDependencies += "io.spray" %% "spray-json" % "1.3.5"
+  )
+
+lazy val upickle = project.in(file("upickle"))
+  .dependsOn(core % "compile->compile;test->test")
+  .settings(
+    commonSettings,
+    name := "jsonquote-upickle",
+    libraryDependencies ++= {
+      val upickleVersion = scalaBinaryVersion.value match {
+        case "2.11" => "0.7.4"
+        case _ => "0.8.0"
+      }
+      Seq(
+        "com.lihaoyi" %% "upickle-core" % upickleVersion,
+        "com.lihaoyi" %% "upickle" % upickleVersion
+      )
+    }
   )
