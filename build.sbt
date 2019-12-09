@@ -1,5 +1,5 @@
 val commonSettings = Seq(
-  version := "0.6.0",
+  version := "0.6.1",
   organization := "net.maffoo",
   scalaVersion := "2.13.1",
   crossScalaVersions := Seq("2.11.12", "2.12.10", "2.13.1"),
