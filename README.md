@@ -12,23 +12,20 @@ they are to be interpolated. jsonquote supports play-json, spray-json, and lift-
 Using jsonquote
 ---------------
 
-jsonquote is built for scala 2.10 and 2.11, and published on bintray. To include it in your
+jsonquote is built for scala 2.11, 2.12, and 2.13, and published on bintray. To include it in your
 project, simply add the desired artifact as a maven dependency for the json library you would
 like to use:
 ```scala
 resolvers += Resolver.jcenterRepo
 
 // use the basic 'literal' json support built in to jsonquote
-libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.4.0"
+libraryDependencies += "net.maffoo" %% "jsonquote-core" % "0.6.1"
 
 // use one of the supported third-party json libraries
-libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.4.0"
-
-// note that for Scala 2.11 version 0.4.0 and above depends on play-json 2.5.X
-// older versions, as well as the artifacts published for Scala 2.10, depend on 2.4.X
-libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.4.0"
-
-libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.4.0"
+libraryDependencies += "net.maffoo" %% "jsonquote-json4s" % "0.6.1"
+libraryDependencies += "net.maffoo" %% "jsonquote-lift" % "0.6.1"
+libraryDependencies += "net.maffoo" %% "jsonquote-play" % "0.6.1"
+libraryDependencies += "net.maffoo" %% "jsonquote-spray" % "0.6.1"
 
 ```
 
