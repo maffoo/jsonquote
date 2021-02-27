@@ -4,6 +4,7 @@
 .cache-main
 .cache-tests
 .classpath
+.coursier
 .eclipse-target
 .project
 .settings/
@@ -15,6 +16,9 @@ lib_managed/
 src_managed/
 project/boot/
 project/plugins/project/
+
+# mill output directory
+out/
 
 # Scala-IDE specific
 .scala_dependencies
