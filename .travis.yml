@@ -10,3 +10,4 @@ script: ./mill "jsonquote[${TRAVIS_SCALA_VERSION}].__.test"
 cache:
   directories:
   - $HOME/.cache/mill
+  - .coursier
