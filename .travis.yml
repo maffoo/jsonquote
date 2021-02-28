@@ -6,4 +6,8 @@ scala:
   - "2.13.1"
 jdk:
   - openjdk8
-
+script: ./mill "jsonquote[${TRAVIS_SCALA_VERSION}].__.test"
+cache:
+  directories:
+  - $HOME/.cache/mill
+  - .coursier
